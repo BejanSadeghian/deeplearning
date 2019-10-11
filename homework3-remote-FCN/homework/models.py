@@ -28,7 +28,7 @@ class CNNClassifier(torch.nn.Module):
                 identity = self.downsample(identity)
             return self.net(x) + identity
         
-    def __init__(self, layers=[32,64,128], n_input_channels=3, kernel_size=7):
+    def __init__(self, layers=[32,64,128,128], n_input_channels=3, kernel_size=7):
         super().__init__()
         """
         Your code here
@@ -160,6 +160,22 @@ class FCN(torch.nn.Module):
         d_2 = self.relu(self.convtr_2(torch.cat((d_3,a_2),1)))
         #d_1 = self.relu(self.convtr_1(d_2))
         z = d_2
+        return self.classifier(z)
+        d_4 = self.relu(self.convtr_4(torch.cat((d_5,a_4),1)))
+        d_3 = self.relu(self.convtr_3(torch.cat((d_4,a_3),1)))
+        d_2 = self.relu(self.convtr_2(torch.cat((d_3,a_2),1)))
+        d_1 = self.relu(self.convtr_1(torch.cat((d_2,a_1),1)))
+
+        #z_6 = self.convtr_4(a_5)
+        #a_6 = self.relu(z_6)
+        #z_7 = self.convtr_3(torch.cat((a_6, a_3),1))
+        #a_7 = self.relu(z_7)
+        #z_8 = self.convtr_2(torch.cat((a_7, a_2),1))
+        #a_8 = self.relu(z_8)
+        #z_9 = self.convtr_1(torch.cat((a_8, a_1),1))
+        #a_9 = self.relu(z_9)
+        z = d_1
+        
         return self.classifier(z)
 
 

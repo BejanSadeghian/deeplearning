@@ -47,10 +47,10 @@ def train(args):
     #print(t_mean)
     #print(t_std)
 
-    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor(), dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])])
+    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor()]) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])
 
     train_gen = load_dense_data(args.train_path, batch_size=args.batch_size, transform=transformer)#, rotate=data_rotate, flip=data_flip, colorjitter=data_colorjitter)
-    valid_gen = load_dense_data(args.valid_path, batch_size=args.batch_size, transform=dense_transforms.Compose([dense_transforms.ToTensor(), dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]))
+    valid_gen = load_dense_data(args.valid_path, batch_size=args.batch_size, transform=dense_transforms.Compose([dense_transforms.ToTensor())) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     
     loss = torch.nn.CrossEntropyLoss()
     #optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
