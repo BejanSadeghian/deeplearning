@@ -255,8 +255,8 @@ class FCN(torch.nn.Module):
 
         H = x.size()[2]
         W = x.size()[3]
-        print('start')
-        print(x.size())
+#        print('start')
+#        print(x.size())
         z_1 = self.conv_1_1(x)
         a_1 = self.relu(self.bnorm_1_1(z_1))
 #        print(a_1.size())
@@ -285,9 +285,9 @@ class FCN(torch.nn.Module):
         o_1 = self.convtr_5(o_1)
         o_1 = self.convtr_6(o_1)
 #        o_1 = self.convtr_7(o_1)
-        print(o_1.size())
+#        print(o_1.size())
         o_1 = o_1[:,:,:H,:W]
-        print(o_1.size())
+#        print(o_1.size())
         
         
         
