@@ -142,6 +142,9 @@ class FCN(torch.nn.Module):
         self.convtr_3_1 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.convtr_3_2 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.convtr_3_3 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
+        
+        
+        self.classifier = torch.nn.Conv2d(128,5,kernel_size=1)
 
         
 #        self.relu = torch.nn.ReLU(inplace=True)
@@ -197,47 +200,46 @@ class FCN(torch.nn.Module):
         z_3 = self.bnorm_1(z_2)
         a_1 = self.relu(z_3)
         m_1 = self.mp_1(a_1)
-        print(m_1.size())
+#        print(m_1.size())
         o_1 = self.convtr_1_1(m_1)
         o_1 = self.convtr_1_2(o_1)
         o_1 = self.convtr_1_3(o_1)
         o_1 = o_1[:,:,:H,:W]
-        print(o_1.size())
+#        print(o_1.size())
         
         #Block 2
-        print('block2')
+#        print('block2')
         x_0 = o_1
         z_1 = self.conv_2_1(x_0)
         z_2 = self.conv_2_2(z_1)
         z_3 = self.bnorm_2(z_2)
         a_1 = self.relu(z_3)
         m_1 = self.mp_2(a_1)
-        print(m_1.size())
+#        print(m_1.size())
         o_1 = self.convtr_2_1(m_1)
         o_1 = self.convtr_2_2(o_1)
         o_1 = self.convtr_2_3(o_1)
         o_1 = o_1[:,:,:H,:W]
-        print(o_1.size())
+#        print(o_1.size())
         
         
         #Block 3
-        print('block3')
+#        print('block3')
         x_0 = o_1
         z_1 = self.conv_3_1(x_0)
         z_2 = self.conv_3_2(z_1)
         z_3 = self.bnorm_3(z_2)
         a_1 = self.relu(z_3)
         m_1 = self.mp_3(a_1)
-        print(m_1.size())
+#        print(m_1.size())
         o_1 = self.convtr_3_1(m_1)
         o_1 = self.convtr_3_2(o_1)
         o_1 = self.convtr_3_3(o_1)
         o_1 = o_1[:,:,:H,:W]
-        print(o_1.size())
+#        print(o_1.size())
         
-
         z = o_1
-        return None
+#        return None
         
 #        z_1 = self.conv_1(x)
 #        a_1 = self.relu(self.bnorm_1(z_1)) + self.res_1(x)
@@ -268,7 +270,7 @@ class FCN(torch.nn.Module):
 #        z = d_1
         
         
-#        return self.classifier(z)
+        return self.classifier(z)
 
 
 model_factory = {
