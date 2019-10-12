@@ -68,8 +68,8 @@ def train(args):
 
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
-#            l = loss(p_y, actual.long())
-#            l.backward()
+            l = loss(p_y, actual.long())
+            l.backward()
             optimizer.step()  
             
             train_logger.add_scalar('loss', l, global_step=global_step)
