@@ -83,14 +83,14 @@ class FCN(torch.nn.Module):
         self.conv_2 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
         self.conv_3 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
         self.conv_4 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
-        self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
+        self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
         self.conv_6 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         self.conv_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
         
-        self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_4 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=4, stride=2, padding=1)#, output_padding=1)
+        self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=4, stride=4, padding=1)#, output_padding=1)
+#        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1)#, output_padding=1)
+#        self.convtr_4 = torch.nn.ConvTranspose2d(5+32, 5, kernel_size=3, stride=2, padding=1)#, output_padding=1)
 
         self.bnorm_1 = torch.nn.BatchNorm2d(32)
         self.bnorm_2 = torch.nn.BatchNorm2d(32)
@@ -131,44 +131,44 @@ class FCN(torch.nn.Module):
         z = x
         z_1 = self.conv_1(z)
         a_1 = self.relu(self.bnorm_1(z_1))
-#        a_1 = F.pad(a_1, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+#        a_1 = F.pad(a_1, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
             
         z = a_1
         z_2 = self.conv_2(z)
-        a_2 = self.relu(self.bnorm_2(z_2)) + self.res_2(z)
-#        a_2 = F.pad(a_2, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+        a_2 = self.relu(self.bnorm_2(z_2)) #+ self.res_2(z)
+#        a_2 = F.pad(a_2, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
         
         z = a_2
         z_3 = self.conv_3(z)
-        a_3 = self.relu(self.bnorm_3(z_3)) + self.res_3(z)
-#        a_3 = F.pad(a_3, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+        a_3 = self.relu(self.bnorm_3(z_3)) #+ self.res_3(z)
+#        a_3 = F.pad(a_3, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
         
         z = a_3
         z_4 = self.conv_4(z)
-        a_4 = self.relu(self.bnorm_4(z_4)) + self.res_4(z)
-#        a_4 = F.pad(a_4, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+        a_4 = self.relu(self.bnorm_4(z_4)) #+ self.res_4(z)
+#        a_4 = F.pad(a_4, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
         
         z = a_4
         z_5 = self.conv_5(z)
-        a_5 = self.relu(self.bnorm_5(z_5)) + self.res_5(z)
-#        a_5 = F.pad(a_5, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+        a_5 = self.relu(self.bnorm_5(z_5)) #+ self.res_5(z)
+#        a_5 = F.pad(a_5, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
         
         z = a_5
         z_6 = self.conv_6(z)
-        a_6 = self.relu(self.bnorm_6(z_6)) + self.res_6(z)
-#        a_6 = F.pad(a_6, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+        a_6 = self.relu(self.bnorm_6(z_6)) #+ self.res_6(z)
+#        a_6 = F.pad(a_6, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
         
         z = a_6
         z_7 = self.conv_7(z)
-        a_7 = self.relu(self.bnorm_7(z_7)) + z
-#        a_7 = F.pad(a_7, (int(np.ceil(z.size(2)/2 % 1)), int(np.ceil(z.size(3)/2 % 1))))
+        a_7 = self.relu(self.bnorm_7(z_7)) #+ z
+#        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
 
         z = self.classifier(a_7)
         
         z = self.bnormtr_1(self.convtr_1(z))
         z = self.bnormtr_2(self.convtr_2(z))
-        z = self.bnormtr_3(self.convtr_3(z))
-        z = self.bnormtr_4(self.convtr_4(z))
+#        z = self.bnormtr_3(self.convtr_3(z))
+#        z = self.bnormtr_4(self.convtr_4(z + a_2))
         
         #print((self.init_padding -1))
         #print(x.size(2) + (self.init_padding -1))
