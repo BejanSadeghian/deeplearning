@@ -50,7 +50,7 @@ def train(args):
     transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor()]) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])
 
     train_gen = load_dense_data(args.train_path, batch_size=args.batch_size, transform=transformer)#, rotate=data_rotate, flip=data_flip, colorjitter=data_colorjitter)
-    valid_gen = load_dense_data(args.valid_path, batch_size=args.batch_size, transform=dense_transforms.Compose([dense_transforms.ToTensor())) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
+    valid_gen = load_dense_data(args.valid_path, batch_size=args.batch_size) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     
     loss = torch.nn.CrossEntropyLoss()
     #optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
@@ -65,8 +65,7 @@ def train(args):
         for data_batch in train_gen:           
             p_y = model(data_batch[0].to(device))
             actual = data_batch[1].to(device)
-            #print(p_y[0])
-            #print(actual[0].long())
+
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
             l = loss(p_y, actual.long())
@@ -74,7 +73,6 @@ def train(args):
             optimizer.step()  
             
             train_logger.add_scalar('loss', l, global_step=global_step)
-#            acc.extend([accuracy(p_y, actual).detach().cpu().numpy()])
             metric.add(p_y.argmax(1), actual)
             global_step += 1
         
@@ -92,7 +90,6 @@ def train(args):
             actual = data_batch[1].to(device)
             
             l = loss(p_y, actual.long())
-#            acc.extend([accuracy(p_y, actual).detach().cpu().numpy()])
             valid_metric.add(p_y.argmax(1), actual)
         acc = valid_metric.global_accuracy
         valid_logger.add_scalar('accuracy', acc, global_step=iteration)
