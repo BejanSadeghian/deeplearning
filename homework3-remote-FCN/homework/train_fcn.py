@@ -62,7 +62,10 @@ def train(args):
         print('Epoch {}'.format(iteration))
         metric = ConfusionMatrix(5)
         model.train()
-        for data_batch in train_gen:           
+        for data_batch in train_gen:       
+            print(data_batch)
+            print(actual)
+            input('test')
             p_y = model(data_batch[0].to(device))
             actual = data_batch[1].to(device)
 
