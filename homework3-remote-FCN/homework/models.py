@@ -116,6 +116,11 @@ class FCN(torch.nn.Module):
 #        self.network = torch.nn.Sequential(*L)
 #        self.classifier = torch.nn.Linear(c,5)
             
+        self.res_1 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
+        self.res_2 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
+        self.res_3 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
+        self.res_4 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
+            
         self.relu = torch.nn.ReLU(inplace=True)
         
         self.conv_1_1 = torch.nn.Conv2d(n_input_channels, 64, kernel_size=kernel_size, padding=3, stride=2)
@@ -204,8 +209,8 @@ class FCN(torch.nn.Module):
         #Block 1
         z_1 = self.relu(self.conv_1_1(x))
         z_2 = self.conv_1_2(z_1)
-#        z_3 = self.bnorm_1(z_2)
-        a_1 = self.relu(z_2)
+        z_3 = self.bnorm_1(z_2)
+        a_1 = self.relu(z_3)
         m_1 = self.mp_1(a_1)
         o_1 = self.convtr_1_1(m_1)
         o_1 = self.convtr_1_2(o_1)
@@ -216,8 +221,8 @@ class FCN(torch.nn.Module):
         x_0 = o_1
         z_1 = self.relu(self.conv_2_1(x_0))
         z_2 = self.conv_2_2(z_1)
-#        z_3 = self.bnorm_2(z_2)
-        a_1 = self.relu(z_2)
+        z_3 = self.bnorm_2(z_2)
+        a_1 = self.relu(z_3)
         m_1 = self.mp_2(a_1)
         o_1 = self.convtr_2_1(m_1)
         o_1 = self.convtr_2_2(o_1)
@@ -229,8 +234,8 @@ class FCN(torch.nn.Module):
         x_0 = o_1
         z_1 = self.relu(self.conv_3_1(x_0))
         z_2 = self.conv_3_2(z_1)
-#        z_3 = self.bnorm_3(z_2)
-        a_1 = self.relu(z_2)
+        z_3 = self.bnorm_3(z_2)
+        a_1 = self.relu(z_3)
         m_1 = self.mp_3(a_1)
         o_1 = self.convtr_3_1(m_1)
         o_1 = self.convtr_3_2(o_1)
@@ -241,8 +246,8 @@ class FCN(torch.nn.Module):
         x_0 = o_1
         z_1 = self.relu(self.conv_4_1(x_0))
         z_2 = self.conv_4_2(z_1)
-#        z_3 = self.bnorm_4(z_2)
-        a_1 = self.relu(z_2)
+        z_3 = self.bnorm_4(z_2)
+        a_1 = self.relu(z_3)
         m_1 = self.mp_4(a_1)
         o_1 = self.convtr_4_1(m_1)
         o_1 = self.convtr_4_2(o_1)
