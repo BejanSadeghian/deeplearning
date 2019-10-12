@@ -2,4 +2,4 @@
 **/dense_data/
 *.pyc
 events*
-README*
+**/log/*
