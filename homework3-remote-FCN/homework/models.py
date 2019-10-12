@@ -81,13 +81,15 @@ class FCN(torch.nn.Module):
         self.conv_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=3, padding=self.init_padding, stride=1)
         self.conv_2 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
         self.conv_3 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
-        self.conv_4 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.conv_4 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
+        self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
         self.conv_6 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         self.conv_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
         
         self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_4 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
 
         self.bnorm_1 = torch.nn.BatchNorm2d(32)
         self.bnorm_2 = torch.nn.BatchNorm2d(32)
@@ -99,6 +101,8 @@ class FCN(torch.nn.Module):
         
         self.bnormtr_1 = torch.nn.BatchNorm2d(5)
         self.bnormtr_2 = torch.nn.BatchNorm2d(5)
+        self.bnormtr_3 = torch.nn.BatchNorm2d(5)
+        self.bnormtr_4 = torch.nn.BatchNorm2d(5)
         
         self.mp_1 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
@@ -241,8 +245,10 @@ class FCN(torch.nn.Module):
 
         z = self.classifier(a_7)
         
-        t_1 = self.bnormtr_1(self.convtr_1(z))
-        z = self.bnormtr_2(self.convtr_2(t_1))
+        z = self.bnormtr_1(self.convtr_1(z))
+        z = self.bnormtr_2(self.convtr_2(z))
+        z = self.bnormtr_3(self.convtr_3(z))
+        z = self.bnormtr_4(self.convtr_4(z))
         
         #print((self.init_padding -1))
         #print(x.size(2) + (self.init_padding -1))
