@@ -130,6 +130,9 @@ class FCN(torch.nn.Module):
         self.convtr_1_1 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.convtr_1_2 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.convtr_1_3 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_1_4 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_1_5 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_1_6 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
         
         self.conv_2_1 = torch.nn.Conv2d(64, 64, kernel_size=3, padding=3, stride=2)
         self.conv_2_2 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
@@ -226,22 +229,14 @@ class FCN(torch.nn.Module):
         
         
         o_1 = self.convtr_2_1(m_1)
-        print(o_1.size())
         o_1 = self.convtr_2_2(o_1)
-        print(o_1.size())
         o_1 = self.convtr_2_3(o_1)
-        print(o_1.size())
         o_1 = self.convtr_1_1(m_1)
-        print(o_1.size())
         o_1 = self.convtr_1_2(o_1)
-        print(o_1.size())
         o_1 = self.convtr_1_3(o_1)
-        print(o_1.size())
-        o_1 = self.convtr_1_3(o_1)
-        print(o_1.size())
-        o_1 = self.convtr_1_3(o_1)
-        print(o_1.size())
-        o_1 = self.convtr_1_3(o_1)
+        o_1 = self.convtr_1_4(o_1)
+        o_1 = self.convtr_1_5(o_1)
+        o_1 = self.convtr_1_6(o_1)
         o_1 = o_1[:,:,:H,:W]
         
         
