@@ -87,7 +87,7 @@ class FCN(torch.nn.Module):
                 identity = self.downsample(identity)
             return self.net(x) + identity
             
-    def __init__(self, layers=[64,128], n_input_channels=3, kernel_size=7):
+    def __init__(self, layers=[64,128], n_input_channels=3, kernel_size=3):
         super().__init__()
         """
         Your code here.
@@ -117,9 +117,9 @@ class FCN(torch.nn.Module):
 #        self.classifier = torch.nn.Linear(c,5)
             
         self.relu = torch.nn.ReLU(inplace=True)
-        self.conv_1_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=kernel_size, padding=3, stride=1)
-        self.conv_1_2 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.conv_1_3 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.conv_1_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=kernel_size, padding=1, stride=2)
+        self.conv_1_2 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
+        self.conv_1_3 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
         self.conv_1_4 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         
         self.bnorm_1_1 = torch.nn.BatchNorm2d(32)
@@ -129,7 +129,10 @@ class FCN(torch.nn.Module):
         
         self.conv_1x1 = torch.nn.Conv2d(128, 5, kernel_size=1)
         
-        self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=1, padding=1)
+        self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+#        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_4 = torch.nn.ConvTranspose2d(5, 5, kernel_size=kernel_size, stride=2, padding=1, output_padding=1)
 
         
         #Separated
@@ -240,7 +243,8 @@ class FCN(torch.nn.Module):
 
         H = x.size()[2]
         W = x.size()[3]
-        
+#        print('start')
+#        print(x.size())
         z_1 = self.conv_1_1(x)
         a_1 = self.relu(self.bnorm_1_1(z_1))
         z_2 = self.conv_1_2(a_1)
@@ -252,9 +256,17 @@ class FCN(torch.nn.Module):
         
         c_0 = self.conv_1x1(a_4)
         
-#        print(c_0.size())
         o_1 = self.convtr_1(c_0)
+        o_1 = self.convtr_2(o_1)
+#        o_1 = self.convtr_3(o_1)
+        o_1 = self.convtr_4(o_1)
 #        print(o_1.size())
+        o_1 = o_1[:,:,:H,:W]
+#        print(o_1.size())
+        
+        
+        
+        
         
 #        #Block 0
 #        z_1 = self.conv_0_1(x)

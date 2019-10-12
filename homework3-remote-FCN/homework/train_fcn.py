@@ -70,7 +70,7 @@ def train(args):
             optimizer.zero_grad()
             l = loss(p_y, actual.long())
             l.backward()
-            optimizer.step()  
+            optimizer.step()
             
             train_logger.add_scalar('loss', l, global_step=global_step)
             metric.add(p_y.argmax(1), actual)
