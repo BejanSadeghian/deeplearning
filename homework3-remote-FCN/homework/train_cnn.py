@@ -45,8 +45,8 @@ def train(args):
     data_colorjitter = args.data_colorjitter
     data_normalize = args.data_normalize
 
-    train_gen = load_data(args.train_path, batch_size=args.batch_size, rotate=data_rotate, flip=data_flip, colorjitter=data_colorjitter, normalize=data_normalize)
-    valid_gen = load_data(args.valid_path, batch_size=args.batch_size, normalize=data_normalize)
+    train_gen = load_data(args.train_path, batch_size=args.batch_size, rotate=data_rotate, flip=data_flip, colorjitter=data_colorjitter)#, normalize=data_normalize)
+    valid_gen = load_data(args.valid_path, batch_size=args.batch_size)#, normalize=data_normalize)
     
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('-rot', '--data_rotate', type=bool, default=True)
     parser.add_argument('-flip', '--data_flip', type=bool, default=True)
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=True)
-    parser.add_argument('-norm', '--data_normalize', type=bool, default=True)
+    parser.add_argument('-norm', '--data_normalize', type=bool, default=False)
 
     args = parser.parse_args()
     train(args)
