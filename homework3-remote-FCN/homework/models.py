@@ -78,8 +78,8 @@ class FCN(torch.nn.Module):
         
         self.relu = torch.nn.ReLU(inplace=True)
 #        self.pooling = torch.nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
-        self.init_padding = 1
-        self.conv_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=3, padding=self.init_padding, stride=1)
+        self.init_padding = 3
+        self.conv_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=7, padding=self.init_padding, stride=1)
         self.conv_2 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
         self.conv_3 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
         self.conv_4 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
