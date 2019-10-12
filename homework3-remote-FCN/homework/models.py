@@ -242,10 +242,10 @@ class FCN(torch.nn.Module):
         z = self.classifier(a_7)
         
         t_1 = self.bnormtr_1(self.convtr_1(z))
-        z = self.convtr_2(t_1)
+        z = self.bnormtr_2(self.convtr_2(t_1))
         
-        print((self.init_padding -1))
-        print(x.size(2) + (self.init_padding -1))
+        #print((self.init_padding -1))
+        #print(x.size(2) + (self.init_padding -1))
         z = z[:,:,int((self.init_padding -1)): int(x.size(2) + (self.init_padding -1)), int((self.init_padding -1)): int(x.size(3) + (self.init_padding -1))]
         
         return z

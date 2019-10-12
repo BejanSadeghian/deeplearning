@@ -63,9 +63,9 @@ def train(args):
         metric = ConfusionMatrix(5)
         model.train()
         for data_batch in train_gen:       
-            print(data_batch)
-            print(actual)
-            input('test')
+            #print(data_batch[0][0])
+            #print(data_batch[1][0])
+            #input('test')
             p_y = model(data_batch[0].to(device))
             actual = data_batch[1].to(device)
 
