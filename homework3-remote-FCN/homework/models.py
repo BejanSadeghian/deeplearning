@@ -87,7 +87,7 @@ class FCN(torch.nn.Module):
                 identity = self.downsample(identity)
             return self.net(x) + identity
             
-    def __init__(self, layers=[64,128], n_input_channels=3, kernel_size=3):
+    def __init__(self, layers=[64,128], n_input_channels=3, kernel_size=7):
         super().__init__()
         """
         Your code here.
@@ -97,149 +97,31 @@ class FCN(torch.nn.Module):
         Hint: Use residual connections
         Hint: Always pad by kernel_size / 2, use an odd kernel_size
         """
-        def outer_pad_func(n,p,k,s):
-            return ((n + 2 * p - k)/s)+1
-            
-#        L = [torch.nn.Conv2d(n_input_channels, layers[0], kernel_size=kernel_size, padding=3, stride=2),
-#             torch.nn.ReLU(),
-#             torch.nn.ConvTranspose2d(layers[0], layers[0], kernel_size=kernel_size, padding=3, stride=2, output_padding=1),
-#             torch.nn.ReLU(),
-#             torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-#             torch.nn.ConvTranspose2d(layers[0], layers[0], kernel_size=3, padding=1, stride=2, output_padding=1),
-#             torch.nn.ReLU()]
-#        
-#        c = layers[0]
-#        for l in layers:
-#            L.append(self.Block(c, l, stride=2))
-#            c = l
-#        
-#        self.network = torch.nn.Sequential(*L)
-#        self.classifier = torch.nn.Linear(c,5)
-            
+        
         self.relu = torch.nn.ReLU(inplace=True)
-        self.conv_1_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=kernel_size, padding=1, stride=2)
-        self.conv_1_2 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
-        self.conv_1_3 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-        self.conv_1_4 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_1_5 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-        self.conv_1_6 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-        self.conv_1_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
+#        self.pooling = torch.nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
         
-        self.bnorm_1_1 = torch.nn.BatchNorm2d(32)
-        self.bnorm_1_2 = torch.nn.BatchNorm2d(64)
-        self.bnorm_1_3 = torch.nn.BatchNorm2d(64)
-        self.bnorm_1_4 = torch.nn.BatchNorm2d(128)
-        self.bnorm_1_5 = torch.nn.BatchNorm2d(128)
-        self.bnorm_1_6 = torch.nn.BatchNorm2d(128)
-        self.bnorm_1_7 = torch.nn.BatchNorm2d(128)
-        
-        self.conv_1x1 = torch.nn.Conv2d(128, 5, kernel_size=1)
-        
-        self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_4 = torch.nn.ConvTranspose2d(5, 5, kernel_size=kernel_size, stride=2, padding=1, output_padding=1)
-        self.convtr_5 = torch.nn.ConvTranspose2d(5, 5, kernel_size=kernel_size, stride=2, padding=1, output_padding=1)
-        self.convtr_6 = torch.nn.ConvTranspose2d(5, 5, kernel_size=kernel_size, stride=2, padding=1, output_padding=1)
-        self.convtr_7 = torch.nn.ConvTranspose2d(5, 5, kernel_size=kernel_size, stride=2, padding=1, output_padding=1)
-        
-        self.res_1_2 = torch.nn.Conv2d(32, 64, kernel_size=1, stride=2)
-        self.res_1_4 = torch.nn.Conv2d(64, 128, kernel_size=1, stride=2)
-        
-        
-        #Separated
-#        self.res_1 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
-#        self.res_2 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
-#        self.res_3 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
-#        self.res_4 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
-#            
-#        self.relu = torch.nn.ReLU(inplace=True)
-#        
-#        self.conv_0_1 = torch.nn.Conv2d(n_input_channels, 64, kernel_size=kernel_size, padding=3, stride=2)
-#        
-#        self.conv_1_1 = torch.nn.Conv2d(64, 64, kernel_size=kernel_size, padding=3, stride=2)
-#        self.conv_1_2 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.conv_1_3 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.conv_1_4 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.mp_1 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-#        self.bnorm_1_1 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_1_2 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_1_3 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_1_4 = torch.nn.BatchNorm2d(64)
-#        self.convtr_1_1 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_1_2 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_1_3 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_1_4 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_1_5 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        
-#        self.conv_2_1 = torch.nn.Conv2d(64, 64, kernel_size=3, padding=3, stride=2)
-#        self.conv_2_2 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.conv_2_3 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.conv_2_4 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.mp_2 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-#        self.bnorm_2_1 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_2_2 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_2_3 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_2_4 = torch.nn.BatchNorm2d(64)
-#        self.convtr_2_1 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_2_2 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_2_3 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_2_4 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_2_5 = torch.nn.ConvTranspose2d(64,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        
-#        self.conv_3_1 = torch.nn.Conv2d(64, 128, kernel_size=3, padding=3, stride=2)
-#        self.conv_3_2 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-#        self.conv_3_3 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-#        self.mp_3 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-#        self.bnorm_3_1 = torch.nn.BatchNorm2d(128)
-#        self.bnorm_3_2 = torch.nn.BatchNorm2d(128)
-#        self.convtr_3_1 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_3_2 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_3_3 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-        
-#        self.conv_4_1 = torch.nn.Conv2d(128, 128, kernel_size=3, padding=3, stride=2)
-#        self.conv_4_2 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-#        self.conv_4_3 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-#        self.mp_4 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-#        self.bnorm_4 = torch.nn.BatchNorm2d(128)
-#        self.convtr_4_1 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_4_2 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_4_3 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        
-        
-#        self.classifier = torch.nn.Conv2d(128,5,kernel_size=1)
+        self.conv_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=kernel_size, padding=3, stride=1)
+        self.conv_2 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
+        self.conv_3 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
+        self.conv_4 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.conv_6 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
 
-        
-#        self.relu = torch.nn.ReLU(inplace=True)
-#        self.conv_1 = torch.nn.Conv2d(n_input_channels, 64, kernel_size=kernel_size, padding=3, stride=1)
-#        self.conv_2 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-#        self.conv_3 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
-#        self.conv_4 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
-#        self.conv_5 = torch.nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
-#        self.conv_6 = torch.nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1)
-#
-#        self.convtr_6 = torch.nn.ConvTranspose2d(256,256, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_5 = torch.nn.ConvTranspose2d(256*2,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_4 = torch.nn.ConvTranspose2d(128*2,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_3 = torch.nn.ConvTranspose2d(128*2,128, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        self.convtr_2 = torch.nn.ConvTranspose2d(64*3,64, kernel_size=3, stride=2, padding=1, output_padding=1)
-#        #self.convtr_1 = torch.nn.ConvTranspose2d(64*2,n_input_channels, kernel_size=3, stride=1, padding=1)
-#
-#        self.bnorm_1 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_2 = torch.nn.BatchNorm2d(64)
-#        self.bnorm_3 = torch.nn.BatchNorm2d(128)
-#        self.bnorm_4 = torch.nn.BatchNorm2d(128)
-#        self.bnorm_5 = torch.nn.BatchNorm2d(256)
-#        self.bnorm_6 = torch.nn.BatchNorm2d(256)
-#
-#        self.res_1 = torch.nn.Conv2d(n_input_channels, 64, kernel_size=1, stride=1)
-#        self.res_2 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2)
-#        self.res_3 = torch.nn.Conv2d(64, 128, kernel_size=1, stride=2)
-#        self.res_4 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=2) 
-#        self.res_5 = torch.nn.Conv2d(128, 256, kernel_size=1, stride=2)
-#        self.res_6 = torch.nn.Conv2d(256, 256, kernel_size=1, stride=2)
-#
-#        self.classifier = torch.nn.Conv2d(64, 5, kernel_size=1)
+        self.bnorm_1 = torch.nn.BatchNorm2d(32)
+        self.bnorm_2 = torch.nn.BatchNorm2d(32)
+        self.bnorm_3 = torch.nn.BatchNorm2d(32)
+        self.bnorm_4 = torch.nn.BatchNorm2d(64)
+        self.bnorm_5 = torch.nn.BatchNorm2d(64)
+        self.bnorm_6 = torch.nn.BatchNorm2d(128)
+        self.bnorm_7 = torch.nn.BatchNorm2d(128)
+
+
+        self.res_4 = torch.nn.Conv2d(32, 64, kernel_size=1, stride=1) 
+        self.res_6 = torch.nn.Conv2d(64, 128, kernel_size=1, stride=1)
+
+        self.classifier = torch.nn.Conv2d(128, 5, kernel_size=1)
 
     def forward(self, x):
         """
@@ -251,161 +133,26 @@ class FCN(torch.nn.Module):
               if required (use z = z[:, :, :H, :W], where H and W are the height and width of a corresponding strided
               convolution
         """
-        
 
-        H = x.size()[2]
-        W = x.size()[3]
-#        print('start')
-#        print(x.size())
-        z_1 = self.conv_1_1(x)
-        a_1 = self.relu(self.bnorm_1_1(z_1))
-#        print(a_1.size())
-        z_2 = self.conv_1_2(a_1)
-        a_2 = self.relu(self.bnorm_1_2(z_2)) #+ self.res_1_2(a_1)
-#        print(a_2.size())
-        z_3 = self.conv_1_3(a_2)
-        a_3 = self.relu(self.bnorm_1_3(z_3))
-#        print(a_3.size())
-        z_4 = self.conv_1_4(a_3)
-        a_4 = self.relu(self.bnorm_1_4(z_4)) #+ self.res_1_4(a_3)
-#        print(a_4.size())
-        z_5 = self.conv_1_5(a_4)
-        a_5 = self.relu(self.bnorm_1_4(z_5))
-        z_6 = self.conv_1_6(a_5)
-        a_6 = self.relu(self.bnorm_1_4(z_6))
-#        z_7 = self.conv_1_7(a_6)
-#        a_7 = self.relu(self.bnorm_1_4(z_7))
-        
-        c_0 = self.conv_1x1(a_6)
-        
-        o_1 = self.convtr_1(c_0)
-        o_1 = self.convtr_2(o_1)
-#        o_1 = self.convtr_3(o_1)
-        o_1 = self.convtr_4(o_1)
-        o_1 = self.convtr_5(o_1)
-        o_1 = self.convtr_6(o_1)
-#        o_1 = self.convtr_7(o_1)
-#        print(o_1.size())
-        o_1 = o_1[:,:,:H,:W]
-#        print(o_1.size())
-        
-        
-        
-        
-        
-#        #Block 0
-#        z_1 = self.conv_0_1(x)
-#        z_1a = self.bnorm_0_1(z_1)
-#        r_1 = self.relu(z_1a)
-#        
-#        
-#        #Block 1
-#        z_1 = self.conv_1_1(x)
-#        z_1a = self.bnorm_1_1(z_1)
-#        r_1 = self.relu(z_1a)
-#        z_2 = self.conv_1_2(r_1)
-#        z_3 = self.bnorm_1_2(z_2)
-#        a_1 = self.relu(z_3) + r_1
-#        
-#        z_1 = self.conv_1_3(a_1)
-#        z_1a = self.bnorm_1_3(z_1)
-#        r_1 = self.relu(z_1a)
-#        z_2 = self.conv_1_4(r_1)
-#        z_3 = self.bnorm_1_4(z_2)
-#        a_1 = self.relu(z_3)
-#        
-#        m_1 = self.mp_1(a_1)
-#        o_1 = self.convtr_1_1(m_1)
-#        o_1 = self.convtr_1_2(o_1)
-#        o_1 = self.convtr_1_3(o_1)
-#        o_1 = self.convtr_1_4(o_1)
-#        o_1 = self.convtr_1_5(o_1)
-#        o_1 = o_1[:,:,:H,:W]
-#        
-#        #Block 2
-#        x_0 = o_1
-#        z_1 = self.conv_2_1(x_0)
-#        z_1a = self.bnorm_2_1(z_1)
-#        r_1 = self.relu(z_1a)
-#        z_2 = self.conv_2_2(r_1)
-#        z_3 = self.bnorm_2_2(z_2)
-#        a_1 = self.relu(z_3)
-#        
-#        z_1 = self.conv_2_3(a_1)
-#        z_1a = self.bnorm_2_3(z_1)
-#        r_1 = self.relu(z_1a)
-#        z_2 = self.conv_2_4(r_1)
-#        z_3 = self.bnorm_2_4(z_2)
-#        a_1 = self.relu(z_3)
-#        
-#        m_1 = self.mp_2(a_1)
-#        o_1 = self.convtr_2_1(m_1)
-#        o_1 = self.convtr_2_2(o_1)
-#        o_1 = self.convtr_2_3(o_1)
-#        o_1 = self.convtr_2_4(o_1)
-#        o_1 = self.convtr_2_5(o_1)
-#        o_1 = o_1[:,:,:H,:W]
-#        
-#        
-#        #Block 3
-#        x_0 = o_1
-#        z_1 = self.conv_3_1(x_0)
-#        z_1a = self.bnorm_3_1(z_1)
-#        r_1 = self.relu(z_1a)
-#        z_2 = self.conv_3_2(r_1)
-#        z_3 = self.bnorm_3_2(z_2)
-#        a_1 = self.relu(z_3)
-#        m_1 = self.mp_3(a_1)
-#        o_1 = self.convtr_3_1(m_1)
-#        o_1 = self.convtr_3_2(o_1)
-#        o_1 = self.convtr_3_3(o_1)
-#        o_1 = o_1[:,:,:H,:W]
-        
-#        #Block 4
-#        x_0 = o_1
-#        z_1 = self.relu(self.conv_4_1(x_0))
-#        z_2 = self.conv_4_2(z_1)
-#        z_3 = self.bnorm_4(z_2)
-#        a_1 = self.relu(z_3)
-#        m_1 = self.mp_4(a_1)
-#        o_1 = self.convtr_4_1(m_1)
-#        o_1 = self.convtr_4_2(o_1)
-#        o_1 = self.convtr_4_3(o_1)
-#        o_1 = o_1[:,:,:H,:W]
                 
-        z = o_1
-#        return None
-        
-#        z_1 = self.conv_1(x)
-#        a_1 = self.relu(self.bnorm_1(z_1)) + self.res_1(x)
-#        z_2 = self.conv_2(a_1)
-#        a_2 = self.relu(self.bnorm_2(z_2)) + self.res_2(a_1)
-#        z_3 = self.conv_3(a_2)
-#        a_3 = self.relu(self.bnorm_3(z_3)) + self.res_3(a_2)
-#        z_4 = self.conv_4(a_3)
-#        a_4 = self.relu(self.bnorm_4(z_4)) + self.res_4(a_3)
-#        z_5 = self.conv_5(a_4)
-#        a_5 = self.relu(self.bnorm_5(z_5)) + self.res_5(a_4)
-#        z_6 = self.conv_6(a_5)
-#        a_6 = self.relu(self.bnorm_6(z_6)) + self.res_6(a_5)
-#
-#        d_6 = self.relu(self.convtr_6(a_6))
-#        d_5 = self.relu(self.convtr_5(torch.cat((d_6,a_5),1)))
-#        d_4 = self.relu(self.convtr_4(torch.cat((d_5,a_4),1)))
-#        d_3 = self.relu(self.convtr_3(torch.cat((d_4,a_3),1)))
-#        d_2 = self.relu(self.convtr_2(torch.cat((d_3,a_2),1)))
-#        #d_1 = self.relu(self.convtr_1(d_2))
-#        z = d_2
-#        return self.classifier(z)
-#        d_4 = self.relu(self.convtr_4(torch.cat((d_5,a_4),1)))
-#        d_3 = self.relu(self.convtr_3(torch.cat((d_4,a_3),1)))
-#        d_2 = self.relu(self.convtr_2(torch.cat((d_3,a_2),1)))
-#        d_1 = self.relu(self.convtr_1(torch.cat((d_2,a_1),1)))
-#
-#        z = d_1
-        
+        z_1 = self.conv_1(x)
+        a_1 = self.relu(self.bnorm_1(z_1))
+        z_2 = self.conv_2(a_1)
+        a_2 = self.relu(self.bnorm_2(z_2)) + a_1
+        z_3 = self.conv_3(a_2)
+        a_3 = self.relu(self.bnorm_3(z_3)) + a_2
+        z_4 = self.conv_4(a_3)
+        a_4 = self.relu(self.bnorm_4(z_4)) + self.res_4(a_3)
+        z_5 = self.conv_5(a_4)
+        a_5 = self.relu(self.bnorm_5(z_5)) + a_4
+        z_6 = self.conv_6(a_5)
+        a_6 = self.relu(self.bnorm_6(z_6)) + self.res_6(a_5)
+        z_7 = self.conv_7(a_6)
+        a_7 = self.relu(self.bnorm_7(z_7)) + a_6
+
+
+        z = self.classifier(a_7)
         return z
-#        return self.classifier(z)
 
 
 model_factory = {
