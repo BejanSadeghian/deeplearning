@@ -87,9 +87,9 @@ class FCN(torch.nn.Module):
         self.conv_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
         
         self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_4 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=8, padding=1, output_padding=1)
+#        self.convtr_3 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
+#        self.convtr_4 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
 
         self.bnorm_1 = torch.nn.BatchNorm2d(32)
         self.bnorm_2 = torch.nn.BatchNorm2d(32)
@@ -247,8 +247,8 @@ class FCN(torch.nn.Module):
         
         z = self.bnormtr_1(self.convtr_1(z))
         z = self.bnormtr_2(self.convtr_2(z))
-        z = self.bnormtr_3(self.convtr_3(z))
-        z = self.bnormtr_4(self.convtr_4(z))
+#        z = self.bnormtr_3(self.convtr_3(z))
+#        z = self.bnormtr_4(self.convtr_4(z))
         
         #print((self.init_padding -1))
         #print(x.size(2) + (self.init_padding -1))
