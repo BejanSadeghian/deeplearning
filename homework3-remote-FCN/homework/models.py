@@ -158,7 +158,7 @@ class FCN(torch.nn.Module):
         self.convtr_4_3 = torch.nn.ConvTranspose2d(128,128, kernel_size=3, stride=2, padding=1, output_padding=1)
 #        
         
-        self.classifier = torch.nn.Conv2d(128,5,kernel_size=1)
+        self.classifier = torch.nn.Conv2d(64,5,kernel_size=1)
 
         
 #        self.relu = torch.nn.ReLU(inplace=True)
@@ -206,53 +206,92 @@ class FCN(torch.nn.Module):
 
         H = x.size()[2]
         W = x.size()[3]
+        
+        
+        
         #Block 1
         z_1 = self.relu(self.conv_1_1(x))
         z_2 = self.conv_1_2(z_1)
         z_3 = self.bnorm_1(z_2)
         a_1 = self.relu(z_3)
         m_1 = self.mp_1(a_1)
-        o_1 = self.convtr_1_1(m_1)
-        o_1 = self.convtr_1_2(o_1)
-        o_1 = self.convtr_1_3(o_1)
-        o_1 = o_1[:,:,:H,:W]
         
         #Block 2
-        x_0 = o_1
+        x_0 = m_1
         z_1 = self.relu(self.conv_2_1(x_0))
         z_2 = self.conv_2_2(z_1)
         z_3 = self.bnorm_2(z_2)
         a_1 = self.relu(z_3)
         m_1 = self.mp_2(a_1)
+        
+        
         o_1 = self.convtr_2_1(m_1)
+        print(o_1.size())
         o_1 = self.convtr_2_2(o_1)
+        print(o_1.size())
         o_1 = self.convtr_2_3(o_1)
+        print(o_1.size())
+        o_1 = self.convtr_1_1(m_1)
+        print(o_1.size())
+        o_1 = self.convtr_1_2(o_1)
+        print(o_1.size())
+        o_1 = self.convtr_1_3(o_1)
+        print(o_1.size())
+        o_1 = self.convtr_1_3(o_1)
+        print(o_1.size())
+        o_1 = self.convtr_1_3(o_1)
+        print(o_1.size())
+        o_1 = self.convtr_1_3(o_1)
         o_1 = o_1[:,:,:H,:W]
         
         
-        #Block 3
-        x_0 = o_1
-        z_1 = self.relu(self.conv_3_1(x_0))
-        z_2 = self.conv_3_2(z_1)
-        z_3 = self.bnorm_3(z_2)
-        a_1 = self.relu(z_3)
-        m_1 = self.mp_3(a_1)
-        o_1 = self.convtr_3_1(m_1)
-        o_1 = self.convtr_3_2(o_1)
-        o_1 = self.convtr_3_3(o_1)
-        o_1 = o_1[:,:,:H,:W]
+#        #Block 1
+#        z_1 = self.relu(self.conv_1_1(x))
+#        z_2 = self.conv_1_2(z_1)
+#        z_3 = self.bnorm_1(z_2)
+#        a_1 = self.relu(z_3)
+#        m_1 = self.mp_1(a_1)
+#        o_1 = self.convtr_1_1(m_1)
+#        o_1 = self.convtr_1_2(o_1)
+#        o_1 = self.convtr_1_3(o_1)
+#        o_1 = o_1[:,:,:H,:W]
+#        
+#        #Block 2
+#        x_0 = o_1
+#        z_1 = self.relu(self.conv_2_1(x_0))
+#        z_2 = self.conv_2_2(z_1)
+#        z_3 = self.bnorm_2(z_2)
+#        a_1 = self.relu(z_3)
+#        m_1 = self.mp_2(a_1)
+#        o_1 = self.convtr_2_1(m_1)
+#        o_1 = self.convtr_2_2(o_1)
+#        o_1 = self.convtr_2_3(o_1)
+#        o_1 = o_1[:,:,:H,:W]
         
-        #Block 4
-        x_0 = o_1
-        z_1 = self.relu(self.conv_4_1(x_0))
-        z_2 = self.conv_4_2(z_1)
-        z_3 = self.bnorm_4(z_2)
-        a_1 = self.relu(z_3)
-        m_1 = self.mp_4(a_1)
-        o_1 = self.convtr_4_1(m_1)
-        o_1 = self.convtr_4_2(o_1)
-        o_1 = self.convtr_4_3(o_1)
-        o_1 = o_1[:,:,:H,:W]
+        
+#        #Block 3
+#        x_0 = o_1
+#        z_1 = self.relu(self.conv_3_1(x_0))
+#        z_2 = self.conv_3_2(z_1)
+#        z_3 = self.bnorm_3(z_2)
+#        a_1 = self.relu(z_3)
+#        m_1 = self.mp_3(a_1)
+#        o_1 = self.convtr_3_1(m_1)
+#        o_1 = self.convtr_3_2(o_1)
+#        o_1 = self.convtr_3_3(o_1)
+#        o_1 = o_1[:,:,:H,:W]
+        
+#        #Block 4
+#        x_0 = o_1
+#        z_1 = self.relu(self.conv_4_1(x_0))
+#        z_2 = self.conv_4_2(z_1)
+#        z_3 = self.bnorm_4(z_2)
+#        a_1 = self.relu(z_3)
+#        m_1 = self.mp_4(a_1)
+#        o_1 = self.convtr_4_1(m_1)
+#        o_1 = self.convtr_4_2(o_1)
+#        o_1 = self.convtr_4_3(o_1)
+#        o_1 = o_1[:,:,:H,:W]
                 
         z = o_1
 #        return None

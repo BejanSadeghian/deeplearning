@@ -53,8 +53,8 @@ def train(args):
     valid_gen = load_dense_data(args.valid_path, batch_size=args.batch_size) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     
     loss = torch.nn.CrossEntropyLoss()
-    #optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
-    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
+#    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
 
     global_step = 0
