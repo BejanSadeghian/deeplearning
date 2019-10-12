@@ -86,6 +86,8 @@ class FCN(torch.nn.Module):
         self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
         self.conv_6 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         self.conv_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_8 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_9 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
         
         self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=4, stride=2, padding=1)#, output_padding=1)
         self.convtr_2 = torch.nn.ConvTranspose2d(5, 5, kernel_size=4, stride=4, padding=1)#, output_padding=1)
@@ -99,11 +101,13 @@ class FCN(torch.nn.Module):
         self.bnorm_5 = torch.nn.BatchNorm2d(64)
         self.bnorm_6 = torch.nn.BatchNorm2d(128)
         self.bnorm_7 = torch.nn.BatchNorm2d(128)
+        self.bnorm_8 = torch.nn.BatchNorm2d(128)
+        self.bnorm_9 = torch.nn.BatchNorm2d(128)
         
         self.bnormtr_1 = torch.nn.BatchNorm2d(5)
         self.bnormtr_2 = torch.nn.BatchNorm2d(5)
-        self.bnormtr_3 = torch.nn.BatchNorm2d(5)
-        self.bnormtr_4 = torch.nn.BatchNorm2d(5)
+#        self.bnormtr_3 = torch.nn.BatchNorm2d(5)
+#        self.bnormtr_4 = torch.nn.BatchNorm2d(5)
         
         self.mp_1 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
@@ -114,6 +118,8 @@ class FCN(torch.nn.Module):
         self.res_5 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2) 
         self.res_6 = torch.nn.Conv2d(64, 128, kernel_size=1, stride=1)
         self.res_7 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=1) 
+        self.res_8 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=1) 
+        self.res_9 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=1) 
 
         self.classifier = torch.nn.Conv2d(128, 5, kernel_size=1)
         
@@ -162,8 +168,18 @@ class FCN(torch.nn.Module):
         z_7 = self.conv_7(z)
         a_7 = self.relu(self.bnorm_7(z_7)) #+ z
 #        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-
-        z = self.classifier(a_7)
+        
+        z = a_7
+        z_8 = self.conv_7(z)
+        a_8 = self.relu(self.bnorm_7(z_8)) #+ z
+#        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
+        
+        z = a_8
+        z_9 = self.conv_7(z)
+        a_9 = self.relu(self.bnorm_7(z_9)) #+ z
+#        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
+        
+        z = self.classifier(a_9)
         
         z = self.bnormtr_1(self.convtr_1(z))
         z = self.bnormtr_2(self.convtr_2(z))
