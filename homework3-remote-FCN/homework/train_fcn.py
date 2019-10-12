@@ -51,8 +51,8 @@ def train(args):
 
     train_gen = load_dense_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_gen = load_dense_data(args.valid_path, batch_size=args.batch_size) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
-    
-    loss = torch.nn.CrossEntropyLoss(weight=[1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153])
+    weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
+    loss = torch.nn.CrossEntropyLoss(weight=weight_tensor)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
