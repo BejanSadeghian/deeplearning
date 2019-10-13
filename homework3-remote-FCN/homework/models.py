@@ -126,6 +126,14 @@ class FCN(torch.nn.Module):
         self.bnormtr_2 = torch.nn.BatchNorm2d(5)
         self.bnormtr_3 = torch.nn.BatchNorm2d(5)
         self.bnormtr_4 = torch.nn.BatchNorm2d(5)
+        
+        #Max Pooling
+        self.mp_0 = torch.nn.MaxPool2d(3, padding=1)
+        self.mp_1 = torch.nn.MaxPool2d(3, padding=1)
+        self.mp_2 = torch.nn.MaxPool2d(3, padding=1)
+        self.mp_3 = torch.nn.MaxPool2d(3, padding=1)
+        self.mp_4 = torch.nn.MaxPool2d(3, padding=1)
+        self.mp_5 = torch.nn.MaxPool2d(3, padding=1)
 
         #Residual connections
         self.res_1 = torch.nn.Conv2d(32, 32, kernel_size=1, stride=2) 
@@ -151,6 +159,7 @@ class FCN(torch.nn.Module):
         z = x
         z_0 = self.conv_1(z)
         a_0 = self.relu(self.bnorm_1(z_0))
+        a_0 = self.mp_0(a_0)
         
         #Block 1
         z = a_0
@@ -158,6 +167,7 @@ class FCN(torch.nn.Module):
         a_1_1 = self.relu(self.bnorm_2(z_1_1))
         z_1_2 = self.conv_3(a_1_1)
         a_1_2 = self.relu(self.bnorm_3(z_1_2)) + self.res_1(z)
+        a_1_2 = self.mp_1(a_1_2)
         
         #Block 2
         z = a_1_2
@@ -165,6 +175,7 @@ class FCN(torch.nn.Module):
         a_2_1 = self.relu(self.bnorm_4(z_2_1))
         z_2_2 = self.conv_5(a_2_1)
         a_2_2 = self.relu(self.bnorm_5(z_2_2)) + self.res_2(z)
+        a_2_2 = self.mp_2(a_2_2)
         
         #Block 3
         z = a_2_2
@@ -172,13 +183,15 @@ class FCN(torch.nn.Module):
         a_3_1 = self.relu(self.bnorm_6(z_3_1))
         z_3_2 = self.conv_7(a_3_1)
         a_3_2 = self.relu(self.bnorm_7(z_3_2)) + self.res_3(z)
-        
+        a_3_2 = self.mp_3(a_3_2)
+
         #Block 4        
         z = a_3_2
         z_4_1 = self.conv_8(z)
         a_4_1 = self.relu(self.bnorm_8(z_4_1))
         z_4_2 = self.conv_9(a_4_1)
         a_4_2 = self.relu(self.bnorm_9(z_4_2)) + self.res_4(z)
+        a_4_2 = self.mp_4(a_4_2)
         
         #Block 5        
         z = a_4_2
@@ -186,6 +199,7 @@ class FCN(torch.nn.Module):
         a_5_1 = self.relu(self.bnorm_10(z_5_1))
         z_5_2 = self.conv_11(a_5_1)
         a_5_2 = self.relu(self.bnorm_11(z_5_2)) + z #self.res_5(z) #No need for upsampling 
+        a_5_2 = self.mp_5(a_5_2)
         
         z = self.classifier(a_5_2)
         
