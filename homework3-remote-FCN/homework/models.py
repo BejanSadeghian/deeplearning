@@ -145,6 +145,9 @@ class FCN(torch.nn.Module):
         #Classifier
         self.classifier = torch.nn.Conv2d(128, 5, kernel_size=1)
         
+        #Testing upsample
+        self.upsample = None
+        
 
     def forward(self, x):
         """
@@ -159,7 +162,7 @@ class FCN(torch.nn.Module):
         z = x
         z_0 = self.conv_1(z)
         a_0 = self.relu(self.bnorm_1(z_0))
-        a_0 = self.mp_0(a_0)
+#        a_0 = self.mp_0(a_0)
         
         #Block 1
         z = a_0
@@ -167,7 +170,7 @@ class FCN(torch.nn.Module):
         a_1_1 = self.relu(self.bnorm_2(z_1_1))
         z_1_2 = self.conv_3(a_1_1)
         a_1_2 = self.relu(self.bnorm_3(z_1_2)) + self.res_1(z)
-        a_1_2 = self.mp_1(a_1_2)
+#        a_1_2 = self.mp_1(a_1_2)
         
         #Block 2
         z = a_1_2
@@ -175,7 +178,7 @@ class FCN(torch.nn.Module):
         a_2_1 = self.relu(self.bnorm_4(z_2_1))
         z_2_2 = self.conv_5(a_2_1)
         a_2_2 = self.relu(self.bnorm_5(z_2_2)) + self.res_2(z)
-        a_2_2 = self.mp_2(a_2_2)
+#        a_2_2 = self.mp_2(a_2_2)
         
         #Block 3
         z = a_2_2
@@ -183,7 +186,7 @@ class FCN(torch.nn.Module):
         a_3_1 = self.relu(self.bnorm_6(z_3_1))
         z_3_2 = self.conv_7(a_3_1)
         a_3_2 = self.relu(self.bnorm_7(z_3_2)) + self.res_3(z)
-        a_3_2 = self.mp_3(a_3_2)
+#        a_3_2 = self.mp_3(a_3_2)
 
         #Block 4        
         z = a_3_2
@@ -191,7 +194,7 @@ class FCN(torch.nn.Module):
         a_4_1 = self.relu(self.bnorm_8(z_4_1))
         z_4_2 = self.conv_9(a_4_1)
         a_4_2 = self.relu(self.bnorm_9(z_4_2)) + self.res_4(z)
-        a_4_2 = self.mp_4(a_4_2)
+#        a_4_2 = self.mp_4(a_4_2)
         
         #Block 5        
         z = a_4_2
@@ -199,25 +202,26 @@ class FCN(torch.nn.Module):
         a_5_1 = self.relu(self.bnorm_10(z_5_1))
         z_5_2 = self.conv_11(a_5_1)
         a_5_2 = self.relu(self.bnorm_11(z_5_2)) + z #self.res_5(z) #No need for upsampling 
-        a_5_2 = self.mp_5(a_5_2)
+#        a_5_2 = self.mp_5(a_5_2)
         
         z = self.classifier(a_5_2)
         
-        z0 = self.bnormtr_1(self.convtr_1(z))
-        try:
-            z = self.bnormtr_2(self.convtr_2(torch.cat((z0, a_3_2),1)))
-            z = self.bnormtr_3(self.convtr_3(torch.cat((z, a_2_2),1)))
-            z = self.bnormtr_4(self.convtr_4(torch.cat((z, a_1_2),1)))
-        except Exception as e:
-            #no skip
-            print('no skip', e)
-            z = self.bnormtr_2(self.convtr_2_ns(z0))
-            z = self.bnormtr_3(self.convtr_3_ns(z))
-            z = self.bnormtr_4(self.convtr_4_ns(z))
+        z = F.interpolate(z, size=(x.size()[2], x.size()[3]))
         
-        #print((self.init_padding -1))
-        #print(x.size(2) + (self.init_padding -1))
-        z = z[:,:,int((self.init_padding -1)): int(x.size(2) + (self.init_padding -1)), int((self.init_padding -1)): int(x.size(3) + (self.init_padding -1))]
+#        z0 = self.bnormtr_1(self.convtr_1(z))
+#        try:
+#            z = self.bnormtr_2(self.convtr_2(torch.cat((z0, a_3_2),1)))
+#            z = self.bnormtr_3(self.convtr_3(torch.cat((z, a_2_2),1)))
+#            z = self.bnormtr_4(self.convtr_4(torch.cat((z, a_1_2),1)))
+#        except Exception as e:
+#            #no skip
+#            print('no skip', e)
+#            z = self.bnormtr_2(self.convtr_2_ns(z0))
+#            z = self.bnormtr_3(self.convtr_3_ns(z))
+#            z = self.bnormtr_4(self.convtr_4_ns(z))
+        
+
+#        z = z[:,:,int((self.init_padding -1)): int(x.size(2) + (self.init_padding -1)), int((self.init_padding -1)): int(x.size(3) + (self.init_padding -1))]
         
         return z
 
