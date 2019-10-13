@@ -143,7 +143,7 @@ class FCN(torch.nn.Module):
 #        self.res_5 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=1) 
  
         #Classifier
-        self.classifier = torch.nn.Conv2d(128, 5, kernel_size=1)
+        self.classifier = torch.nn.Conv2d(64, 5, kernel_size=1)
         
         #Testing upsample
         self.upsample = None
