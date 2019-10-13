@@ -188,23 +188,23 @@ class FCN(torch.nn.Module):
         a_3_2 = self.relu(self.bnorm_7(z_3_2)) + self.res_3(z)
 #        a_3_2 = self.mp_3(a_3_2)
 
-        #Block 4        
-        z = a_3_2
-        z_4_1 = self.conv_8(z)
-        a_4_1 = self.relu(self.bnorm_8(z_4_1))
-        z_4_2 = self.conv_9(a_4_1)
-        a_4_2 = self.relu(self.bnorm_9(z_4_2)) + self.res_4(z)
-#        a_4_2 = self.mp_4(a_4_2)
+#        #Block 4        
+#        z = a_3_2
+#        z_4_1 = self.conv_8(z)
+#        a_4_1 = self.relu(self.bnorm_8(z_4_1))
+#        z_4_2 = self.conv_9(a_4_1)
+#        a_4_2 = self.relu(self.bnorm_9(z_4_2)) + self.res_4(z)
+##        a_4_2 = self.mp_4(a_4_2)
         
-        #Block 5        
-        z = a_4_2
-        z_5_1 = self.conv_10(z)
-        a_5_1 = self.relu(self.bnorm_10(z_5_1))
-        z_5_2 = self.conv_11(a_5_1)
-        a_5_2 = self.relu(self.bnorm_11(z_5_2)) + z #self.res_5(z) #No need for upsampling 
-#        a_5_2 = self.mp_5(a_5_2)
+#        #Block 5        
+#        z = a_4_2
+#        z_5_1 = self.conv_10(z)
+#        a_5_1 = self.relu(self.bnorm_10(z_5_1))
+#        z_5_2 = self.conv_11(a_5_1)
+#        a_5_2 = self.relu(self.bnorm_11(z_5_2)) + z #self.res_5(z) #No need for upsampling 
+##        a_5_2 = self.mp_5(a_5_2)
         
-        z = self.classifier(a_5_2)
+        z = self.classifier(a_3_2)
         
         z = F.interpolate(z, size=(x.size()[2], x.size()[3]))
         
