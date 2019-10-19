@@ -176,11 +176,7 @@ def train(args):
             
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
-#            print(p_y.shape)
-#            print(actual.shape)
-#            print(actual)
             l = loss(p_y.cpu(), actual.float().cpu())
-#            print(l)
             l.backward()
             optimizer.step()
             
@@ -188,11 +184,10 @@ def train(args):
             
             global_step += 1
         
-        for i, layer in enumerate(model.parameters()):
-            if layer.requires_grad:
-                train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
-#        train_logger.add_scalar('accuracy', metric.global_accuracy, global_step=iteration)
-#        train_logger.add_scalar('Intersection over union', metric.iou, global_step=iteration)
+#        for i, layer in enumerate(model.parameters()):
+#            if layer.requires_grad:
+#                train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
+
         im = sample_image[0].unsqueeze(0)
         sample = model(im.to(device))
         sample.squeeze_(0)
