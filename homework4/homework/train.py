@@ -14,7 +14,7 @@ def train(args):
     if device == 'cuda' and args.clear_cache:
         torch.cuda.empty_cache()
         
-    model = Detector()
+    model = Detector().to(device)
     train_logger, valid_logger = None, None
 
     if args.log_dir is not None:
