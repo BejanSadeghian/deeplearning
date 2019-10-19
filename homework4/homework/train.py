@@ -82,8 +82,8 @@ def train(args):
                 train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
 #        train_logger.add_scalar('accuracy', metric.global_accuracy, global_step=iteration)
 #        train_logger.add_scalar('Intersection over union', metric.iou, global_step=iteration)
-        sample = model(sample_image[0].to(device))
-        train_logger.add_image('Predict',sample.cpu(), global_step=iteration)
+        sample = model(sample_image[0].unsqueeze_(0).to(device))
+        train_logger.add_image('Predict',sample.squeeze_(0).cpu(), global_step=iteration)
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
         #Validate
@@ -101,8 +101,8 @@ def train(args):
 #        print('Accuracy {}'.format(acc))
 #        scheduler.step(acc)
             
-        sample = model(sample_valid_image[0].to(device))
-        valid_logger.add_image('Predict',sample.cpu(), global_step=iteration)
+        sample = model(sample_valid_image[0].unsqueeze_(0).to(device))
+        valid_logger.add_image('Predict',sample.squeeze_(0).cpu(), global_step=iteration)
         valid_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
         
         train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
