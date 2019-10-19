@@ -104,37 +104,22 @@ class calc_metric(object):
         apb2 = self.pr_dist[2].average_prec
         return (ap0, ap1, ap2, apb0, apb1, apb2)
 
-def one_hot(index, classes):
-    size = index.size() + (classes,)
-    view = index.size() + (1,)
 
-    mask = torch.Tensor(*size).fill_(0)
-    index = index.view(*view)
-    ones = 1.
-
-    if isinstance(index, Variable):
-        ones = Variable(torch.Tensor(index.size()).fill_(1))
-        mask = Variable(mask, volatile=index.volatile)
-
-    return mask.scatter_(1, index, ones)
-
-
-class FocalLoss(nn.Module):
-
-    def __init__(self, gamma=0, eps=1e-7):
+class FocalLoss(torch.nn.Module):
+    ## Focal Loss written according to https://arxiv.org/pdf/1708.02002.pdf
+    ## Also borrowed the idea of epislon from https://github.com/DingKe/pytorch_workplace/blob/master/focalloss/loss.py
+    def __init__(self, gamma=2, eps=1e-7):
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.eps = eps
-
+    
     def forward(self, input, target):
-        y = one_hot(target, input.size(-1))
-        logit = F.softmax(input, dim=-1)
-        logit = logit.clamp(self.eps, 1. - self.eps)
-
-        loss = -1 * y * torch.log(logit) # cross entropy
-        loss = loss * (1 - logit) ** self.gamma # focal loss
-
-        return loss.sum()
+        p = input.view(-1)
+        p.clamp_(-1*self.eps, self.eps)
+        y = target.view(-1)
+        fl = -((1-p)**self.gamma) * F.logsigmoid(p) * y - ((p)**self.gamma) * F.logsigmoid(1-p) * (1-y)
+        return fl.sum()
+        
 
 def train(args):
     from os import path
@@ -155,23 +140,23 @@ def train(args):
     Your code here, modify your HW3 code
     """
     
-    data_rotate = args.data_rotate
-    data_flip = args.data_flip
-    data_colorjitter = args.data_colorjitter
+#    data_rotate = args.data_rotate
+#    data_flip = args.data_flip
+#    data_colorjitter = args.data_colorjitter
 #    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor()]) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])
     transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0),  dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
     valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
     
     train_gen = load_detection_data(args.train_path, batch_size=args.batch_size, transform=transformer)
-    valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
+#    valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
-    weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
+#    weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
 #    loss = torch.nn.BCEWithLogitsLoss()
     loss = FocalLoss(gamma=2)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
+#    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
     
     #Sample Image
     image_id = np.random.randint(0,100)
@@ -191,7 +176,8 @@ def train(args):
             
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
-            l = loss(p_y, actual.float())
+            l = loss(p_y.cpu(), actual.float().cpu())
+            print(l)
             l.backward()
             optimizer.step()
             
