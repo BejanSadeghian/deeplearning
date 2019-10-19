@@ -191,7 +191,7 @@ def train(args):
         #Validate
         print('validate')
         model.eval()
-        valid_metric = calc_metric()
+        valid_metric = calc_metric(model)
         valid_metric.add(valid_metric_dataset)
         ap0, ap1, ap2, apb0, apb1, apb2 = valid_metric.calc()
         
