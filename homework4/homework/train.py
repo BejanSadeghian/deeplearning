@@ -180,7 +180,7 @@ def train(args):
 #            print(actual.shape)
 #            print(actual)
             l = loss(p_y.cpu(), actual.float().cpu())
-            print(l)
+#            print(l)
             l.backward()
             optimizer.step()
             
