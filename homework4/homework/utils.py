@@ -66,6 +66,7 @@ if __name__ == '__main__':
     fig, axs = subplots(1, 2)
     for i, ax in enumerate(axs.flat):
         im, hm, size = dataset[100+i]
+        print(dataset[100+i])
         ax.imshow(F.to_pil_image(im), interpolation=None)
         hm = hm.numpy().transpose([1, 2, 0])
         alpha = 0.25*hm.max(axis=2) + 0.75

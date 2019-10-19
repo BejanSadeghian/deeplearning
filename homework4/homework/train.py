@@ -6,6 +6,77 @@ from .utils import load_detection_data, DetectionSuperTuxDataset
 from . import dense_transforms
 import torch.utils.tensorboard as tb
 
+## Copied this code from the test code
+def point_in_box(p, x0, y0, x1, y1):
+    return x0 <= p[0] < x1 and y0 <= p[1] < y1
+
+
+def point_close(p, x0, y0, x1, y1, d=5):
+    return ((x0 + x1 - 1) / 2 - p[0]) ** 2 + ((y0 + y1 - 1) / 2 - p[1]) ** 2 < d ** 2
+
+
+def box_iou(p, x0, y0, x1, y1, t=0.5):
+    iou = abs(min(p[0] + p[2], x1) - max(p[0] - p[2], x0)) * abs(min(p[1] + p[3], y1) - max(p[1] - p[3], y0)) / \
+          abs(max(p[0] + p[2], x1) - min(p[0] - p[2], x0)) * abs(max(p[1] + p[3], y1) - min(p[1] - p[3], y0))
+    return iou > t
+
+
+class PR:
+    def __init__(self, min_size=20, is_close=point_in_box):
+        self.min_size = min_size
+        self.total_det = 0
+        self.det = []
+        self.is_close = is_close
+
+    def add(self, d, lbl):
+        small_lbl = [b for b in lbl if abs(b[2] - b[0]) * abs(b[3] - b[1]) < self.min_size]
+        large_lbl = [b for b in lbl if abs(b[2] - b[0]) * abs(b[3] - b[1]) >= self.min_size]
+        used = [False] * len(large_lbl)
+        for s, *p in d:
+            match = False
+            for i, box in enumerate(large_lbl):
+                if not used[i] and self.is_close(p, *box):
+                    match = True
+                    used[i] = True
+                    break
+            if match:
+                self.det.append((s, 1))
+            else:
+                match_small = False
+                for i, box in enumerate(small_lbl):
+                    if self.is_close(p, *box):
+                        match_small = True
+                        break
+                if not match_small:
+                    self.det.append((s, 0))
+        self.total_det += len(large_lbl)
+
+    @property
+    def curve(self):
+        true_pos, false_pos = 0, 0
+        r = []
+        for t, m in sorted(self.det, reverse=True):
+            if m:
+                true_pos += 1
+            else:
+                false_pos += 1
+            prec = true_pos / (true_pos + false_pos)
+            recall = true_pos / self.total_det
+            r.append((prec, recall))
+        return r
+
+    @property
+    def average_prec(self, n_samples=11):
+        max_prec = 0
+        cur_rec = 1
+        precs = []
+        for prec, recall in self.curve[::-1]:
+            max_prec = max(max_prec, prec)
+            while cur_rec > recall:
+                precs.append(max_prec)
+                cur_rec -= 1.0 / n_samples
+        return sum(precs) / len(precs)
+
 
 def train(args):
     from os import path
@@ -30,8 +101,8 @@ def train(args):
     data_flip = args.data_flip
     data_colorjitter = args.data_colorjitter
 #    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor()]) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])
-    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0),  dense_transforms.ToTensor(), dense_transforms.to_heatmap]) 
-    valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor(), dense_transforms.to_heatmap]) 
+    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0),  dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
+    valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
     
     train_gen = load_detection_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
@@ -105,6 +176,10 @@ def train(args):
         im = sample_valid_image[0].unsqueeze(0)
         sample = model(im.to(device))
         sample.squeeze_(0)
+        predict = model.detect(sample)
+        
+        valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
+        valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
         valid_logger.add_image('Predict',sample.cpu(), global_step=iteration)
         valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
         
