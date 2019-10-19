@@ -151,18 +151,9 @@ def train(args):
 #        metric = ConfusionMatrix(5)
         model.train()
         for data_batch in train_gen:  
-#            print(data_batch[0][0])
-#            print(data_batch[1][0])
-#            input('stop')
-            
-#            print(data_batch[0][0])
-#            print(data_batch[1][0])
             p_y = model(data_batch[0].to(device))
             actual = data_batch[1].to(device)
             
-#            print(p_y)
-#            print(actual)
-
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
             l = loss(p_y, actual.float())
@@ -171,7 +162,6 @@ def train(args):
             
             train_logger.add_scalar('loss', l, global_step=global_step)
             
-#            metric.add(p_y.argmax(1), actual)
             global_step += 1
         
         for i, layer in enumerate(model.parameters()):
@@ -183,8 +173,8 @@ def train(args):
         sample = model(im.to(device))
         sample.squeeze_(0)
 #        detection = model.detect(sample)
-        valid_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
-        valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
+        train_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
+        train_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
 #        train_logger.add_image('Detected',sample.cpu(), global_step=iteration)
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
