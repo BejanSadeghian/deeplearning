@@ -176,14 +176,14 @@ class Detector(torch.nn.Module):
                     return no more than 100 detections per image
            Hint: Use extract_peak here
         """
-        print('detect',image.shape)
+#        print('detect',image.shape)
         penultimate_res = []
         for i in range(image.shape[0]):
             layer = extract_peak(image[i])
             penultimate_res.extend([(i,l[0],l[1],l[2]) for l in layer])
         
         ultimate_res = sorted(penultimate_res, key=lambda x: x[1])[:100]
-        print(ultimate_res)
+#        print(ultimate_res)
         return ultimate_res
         
             
