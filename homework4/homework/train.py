@@ -108,7 +108,7 @@ class calc_metric(object):
 class FocalLoss(torch.nn.Module):
     ## Focal Loss written according to https://arxiv.org/pdf/1708.02002.pdf
     ## Also borrowed the idea of epislon from https://github.com/DingKe/pytorch_workplace/blob/master/focalloss/loss.py
-    def __init__(self, gamma=2, eps=1e-7):
+    def __init__(self, gamma=0, eps=1e-7):
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.eps = eps
