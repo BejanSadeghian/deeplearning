@@ -78,6 +78,30 @@ class PR:
         return sum(precs) / len(precs)
 
 
+class calc_metric(object):
+    def __init__(self,model):
+        # Compute detections
+        self.pr_box = [PR() for _ in range(3)]
+        self.pr_dist = [PR(is_close=point_close) for _ in range(3)]
+        self.model = model
+        
+    def add(self, dataset):
+        for img, *gts in dataset:
+            d = self.model.detect(img)
+            for i, gt in enumerate(gts):
+                self.pr_box[i].add([j[1:] for j in d if j[0] == i], gt)
+                self.pr_dist[i].add([j[1:] for j in d if j[0] == i], gt)
+    
+    def calc(self):
+        ap0 = self.pr_box[0].average_prec
+        ap1 = self.pr_box[1].average_prec
+        ap2 = self.pr_box[2].average_prec
+        apb0 = self.pr_dist[0].average_prec
+        apb1 = self.pr_dist[1].average_prec
+        apb2 = self.pr_dist[2].average_prec
+        return (ap0, ap1, ap2, apb0, apb1, apb2)
+
+
 def train(args):
     from os import path
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -106,7 +130,8 @@ def train(args):
     
     train_gen = load_detection_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
-
+    valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
+    
     weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
     loss = torch.nn.BCEWithLogitsLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
@@ -145,6 +170,7 @@ def train(args):
             optimizer.step()
             
             train_logger.add_scalar('loss', l, global_step=global_step)
+            
 #            metric.add(p_y.argmax(1), actual)
             global_step += 1
         
@@ -156,31 +182,35 @@ def train(args):
         im = sample_image[0].unsqueeze(0)
         sample = model(im.to(device))
         sample.squeeze_(0)
-        train_logger.add_image('Predict',sample.cpu(), global_step=iteration)
+#        detection = model.detect(sample)
+        valid_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
+        valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
+#        train_logger.add_image('Detected',sample.cpu(), global_step=iteration)
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
         #Validate
+        print('validate')
         model.eval()
-#        valid_metric = ConfusionMatrix(5)
-        for data_batch in valid_gen:
-            p_y = model(data_batch[0].to(device))
-            actual = data_batch[1].to(device)
-            
-            l = loss(p_y, actual.float())
-#            valid_metric.add(p_y.argmax(1), actual)
-#        acc = valid_metric.global_accuracy
-#        valid_logger.add_scalar('accuracy', acc, global_step=iteration)
-#        valid_logger.add_scalar('Intersection over union', valid_metric.iou, global_step=iteration)
-#        print('Accuracy {}'.format(acc))
-#        scheduler.step(acc)
+        valid_metric = calc_metric()
+        valid_metric.add(valid_metric_dataset)
+        ap0, ap1, ap2, apb0, apb1, apb2 = valid_metric.calc()
+        
+        #Record Valid results
+        valid_logger.add_scalar('AP0', ap0, global_step=iteration)
+        valid_logger.add_scalar('AP1', ap1, global_step=iteration)
+        valid_logger.add_scalar('AP2', ap2, global_step=iteration)
+        valid_logger.add_scalar('AP_box0', apb0, global_step=iteration)
+        valid_logger.add_scalar('AP_box1', apb1, global_step=iteration)
+        valid_logger.add_scalar('AP_box2', apb2, global_step=iteration)
+        
         im = sample_valid_image[0].unsqueeze(0)
         sample = model(im.to(device))
         sample.squeeze_(0)
-        predict = model.detect(sample)
+#        detection = model.detect(sample)
         
         valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
         valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
-        valid_logger.add_image('Predict',sample.cpu(), global_step=iteration)
+#        valid_logger.add_image('Detected',sample.cpu(), global_step=iteration)
         valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
         
         train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
