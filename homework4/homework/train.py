@@ -41,14 +41,24 @@ def train(args):
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
-
+    
+    #Sample Image
+    image_id = np.random.randint(0,100)
+    train_dataset = DetectionSuperTuxDataset(args.train_path, transform=transformer)
+    valid_dataset = DetectionSuperTuxDataset(args.valid_path, transform=valid_transformer)
+    sample_image = train_dataset[image_id]
+    sample_valid_image = valid_dataset[image_id]
+    
     global_step = 0
     for iteration in range(args.epochs):
         print('Epoch {}'.format(iteration))
 #        metric = ConfusionMatrix(5)
         model.train()
         for data_batch in train_gen:  
-#            print(data_batch)
+#            print(data_batch[0][0])
+#            print(data_batch[1][0])
+#            input('stop')
+            
 #            print(data_batch[0][0])
 #            print(data_batch[1][0])
             p_y = model(data_batch[0].to(device))
@@ -72,6 +82,9 @@ def train(args):
                 train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
 #        train_logger.add_scalar('accuracy', metric.global_accuracy, global_step=iteration)
 #        train_logger.add_scalar('Intersection over union', metric.iou, global_step=iteration)
+        sample = model(sample_image[0].to(device))
+        train_logger.add_image('Predict',sample, global_step=iteration)
+        train_logger.add_image('Actual',sample_image[1].to(device), global_step=iteration)
 
         #Validate
         model.eval()
@@ -87,6 +100,11 @@ def train(args):
 #        valid_logger.add_scalar('Intersection over union', valid_metric.iou, global_step=iteration)
 #        print('Accuracy {}'.format(acc))
 #        scheduler.step(acc)
+            
+        sample = model(sample_valid_image[0].to(device))
+        valid_logger.add_image('Predict',sample, global_step=iteration)
+        valid_logger.add_image('Actual',sample_image[1].to(device), global_step=iteration)
+        
         train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
         save_model(model)
 
