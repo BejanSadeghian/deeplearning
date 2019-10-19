@@ -80,7 +80,7 @@ def train(args):
             p_y = model(data_batch[0].to(device))
             actual = data_batch[1].to(device)
             
-            l = loss(p_y, actual.long())
+            l = loss(p_y, actual.float())
 #            valid_metric.add(p_y.argmax(1), actual)
 #        acc = valid_metric.global_accuracy
 #        valid_logger.add_scalar('accuracy', acc, global_step=iteration)
