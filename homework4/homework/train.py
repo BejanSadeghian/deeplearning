@@ -101,6 +101,37 @@ class calc_metric(object):
         apb2 = self.pr_dist[2].average_prec
         return (ap0, ap1, ap2, apb0, apb1, apb2)
 
+def one_hot(index, classes):
+    size = index.size() + (classes,)
+    view = index.size() + (1,)
+
+    mask = torch.Tensor(*size).fill_(0)
+    index = index.view(*view)
+    ones = 1.
+
+    if isinstance(index, Variable):
+        ones = Variable(torch.Tensor(index.size()).fill_(1))
+        mask = Variable(mask, volatile=index.volatile)
+
+    return mask.scatter_(1, index, ones)
+
+
+class FocalLoss(nn.Module):
+
+    def __init__(self, gamma=0, eps=1e-7):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.eps = eps
+
+    def forward(self, input, target):
+        y = one_hot(target, input.size(-1))
+        logit = F.softmax(input, dim=-1)
+        logit = logit.clamp(self.eps, 1. - self.eps)
+
+        loss = -1 * y * torch.log(logit) # cross entropy
+        loss = loss * (1 - logit) ** self.gamma # focal loss
+
+        return loss.sum()
 
 def train(args):
     from os import path
@@ -133,7 +164,8 @@ def train(args):
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
     weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
-    loss = torch.nn.BCEWithLogitsLoss()
+#    loss = torch.nn.BCEWithLogitsLoss()
+    loss = FocalLoss(gamma=2)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
