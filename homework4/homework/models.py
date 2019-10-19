@@ -131,7 +131,8 @@ class Detector(torch.nn.Module):
             penultimate_res.extend([(i,l[0],l[1],l[2]) for l in layer])
         
         ultimate_res = sorted(penultimate_res, key=lambda x: x[1])[:100]
-#        print(ultimate_res)
+        print(ultimate_res)
+        input('stop')
         return ultimate_res
         
             
