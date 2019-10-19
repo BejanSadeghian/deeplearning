@@ -31,67 +31,66 @@ def extract_peak(heatmap, max_pool_ks=7, min_score=-5, max_det=100):
     return response
 
 
-class Detector(torch.nn.Module):
-    def __init__(self, layers=[64,128], n_input_channels=3, kernel_size=7):
-        """
-           Your code here.
-           Setup your detection network
-        """
+class CNNClassifier(torch.nn.Module):
+    class Block(torch.nn.Module):
+        def __init__(self, n_input, n_output, kernel_size=3, stride=2):
+            super().__init__()
+            self.c1 = torch.nn.Conv2d(n_input, n_output, kernel_size=kernel_size, padding=kernel_size // 2,
+                                      stride=stride)
+            self.c2 = torch.nn.Conv2d(n_output, n_output, kernel_size=kernel_size, padding=kernel_size // 2)
+            self.c3 = torch.nn.Conv2d(n_output, n_output, kernel_size=kernel_size, padding=kernel_size // 2)
+            self.skip = torch.nn.Conv2d(n_input, n_output, kernel_size=1, stride=stride)
+
+        def forward(self, x):
+            return F.relu(self.c3(F.relu(self.c2(F.relu(self.c1(x)))))) + self.skip(x)
+
+    def __init__(self, layers=[16, 32, 64, 128], n_output_channels=6, kernel_size=3):
         super().__init__()
-        
-        self.relu = torch.nn.ReLU(inplace=True)
-        self.init_padding = 1
-        self.conv_1 = torch.nn.Conv2d(n_input_channels, 32, kernel_size=3, padding=self.init_padding, stride=1)
-        self.conv_2 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
-        self.conv_3 = torch.nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
-        self.conv_4 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
-        self.conv_5 = torch.nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
-        self.conv_6 = torch.nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_7 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_8 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_9 = torch.nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
-        
-        self.convtr_1 = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_2 = torch.nn.ConvTranspose2d(5+64, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_3 = torch.nn.ConvTranspose2d(5+32, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_4 = torch.nn.ConvTranspose2d(5+32, 3, kernel_size=3, stride=2, padding=1, output_padding=1)
-        
-        #No Skip connections
-        self.convtr_1_ns = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_2_ns = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_3_ns = torch.nn.ConvTranspose2d(5, 5, kernel_size=3, stride=2, padding=1, output_padding=1)
-        self.convtr_4_ns = torch.nn.ConvTranspose2d(5, 3, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.input_mean = torch.Tensor([0.3521554, 0.30068502, 0.28527516])
+        self.input_std = torch.Tensor([0.18182722, 0.18656468, 0.15938024])
 
-        self.bnorm_1 = torch.nn.BatchNorm2d(32)
-        self.bnorm_2 = torch.nn.BatchNorm2d(32)
-        self.bnorm_3 = torch.nn.BatchNorm2d(32)
-        self.bnorm_4 = torch.nn.BatchNorm2d(64)
-        self.bnorm_5 = torch.nn.BatchNorm2d(64)
-        self.bnorm_6 = torch.nn.BatchNorm2d(128)
-        self.bnorm_7 = torch.nn.BatchNorm2d(128)
-        self.bnorm_8 = torch.nn.BatchNorm2d(128)
-        self.bnorm_9 = torch.nn.BatchNorm2d(128)
-        
-        self.bnormtr_1 = torch.nn.BatchNorm2d(5)
-        self.bnormtr_2 = torch.nn.BatchNorm2d(5)
-        self.bnormtr_3 = torch.nn.BatchNorm2d(5)
-        self.bnormtr_4 = torch.nn.BatchNorm2d(3)
-        
-        self.mp_1 = torch.nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
-        self.mp_2 = torch.nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
-        self.mp_3 = torch.nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
+        L = []
+        c = 3
+        for l in layers:
+            L.append(self.Block(c, l, kernel_size, 2))
+            c = l
+        self.network = torch.nn.Sequential(*L)
+        self.classifier = torch.nn.Linear(c, n_output_channels)
 
-        self.res_1 = torch.nn.Conv2d(32, 32, kernel_size=1, stride=1) 
-        self.res_2 = torch.nn.Conv2d(32, 32, kernel_size=1, stride=2) 
-        self.res_3 = torch.nn.Conv2d(32, 32, kernel_size=1, stride=2) 
-        self.res_4 = torch.nn.Conv2d(32, 64, kernel_size=1, stride=2) 
-        self.res_5 = torch.nn.Conv2d(64, 64, kernel_size=1, stride=2) 
-        self.res_6 = torch.nn.Conv2d(64, 128, kernel_size=1, stride=1)
-        self.res_7 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=1) 
-        self.res_8 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=1) 
-        self.res_9 = torch.nn.Conv2d(128, 128, kernel_size=1, stride=1) 
+    def forward(self, x):
+        z = self.network((x - self.input_mean[None, :, None, None].to(x.device)) / self.input_std[None, :, None, None].to(x.device))
+        # z = self.drop(z)
+        return self.classifier(z.mean(dim=[2, 3]))
 
-        self.classifier = torch.nn.Conv2d(128, 5, kernel_size=1)
+class Detector(torch.nn.Module):
+    
+    class UpBlock(torch.nn.Module):
+        def __init__(self, n_input, n_output, kernel_size=3, stride=2):
+            super().__init__()
+            self.c1 = torch.nn.ConvTranspose2d(n_input, n_output, kernel_size=kernel_size, padding=kernel_size // 2,
+                                      stride=stride, output_padding=1)
+
+        def forward(self, x):
+            return F.relu(self.c1(x))
+
+    def __init__(self, layers=[16, 32, 64, 96, 128], n_output_channels=3, kernel_size=3, use_skip=True):
+        super().__init__()
+        self.input_mean = torch.Tensor([0.3521554, 0.30068502, 0.28527516])
+        self.input_std = torch.Tensor([0.18182722, 0.18656468, 0.15938024])
+
+        c = 3
+        self.use_skip = use_skip
+        self.n_conv = len(layers)
+        skip_layer_size = [3] + layers[:-1]
+        for i, l in enumerate(layers):
+            self.add_module('conv%d' % i, CNNClassifier.Block(c, l, kernel_size, 2))
+            c = l
+        for i, l in list(enumerate(layers))[::-1]:
+            self.add_module('upconv%d' % i, self.UpBlock(c, l, kernel_size, 2))
+            c = l
+            if self.use_skip:
+                c += skip_layer_size[i]
+        self.classifier = torch.nn.Conv2d(c, n_output_channels, 1)
         
 
     def forward(self, x):
@@ -100,72 +99,21 @@ class Detector(torch.nn.Module):
            Implement a forward pass through the network, use forward for training,
            and detect for detection
         """
-        z = x
-        z_1 = self.conv_1(z)
-        a_1 = self.relu(self.bnorm_1(z_1))
-#        a_1 = F.pad(a_1, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-            
-        z = a_1
-        z_2 = self.conv_2(z)
-        a_2 = self.relu(self.bnorm_2(z_2)) + self.res_2(z)
-#        a_2 = F.pad(a_2, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_2
-        z_3 = self.conv_3(z)
-        a_3 = self.relu(self.bnorm_3(z_3)) + self.res_3(z)
-        a_3 = self.mp_1(a_3)
-#        a_3 = F.pad(a_3, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_3
-        z_4 = self.conv_4(z)
-        a_4 = self.relu(self.bnorm_4(z_4)) + self.res_4(z)
-#        a_4 = F.pad(a_4, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_4
-        z_5 = self.conv_5(z)
-        a_5 = self.relu(self.bnorm_5(z_5)) + self.res_5(z)
-        a_5 = self.mp_2(a_5)
-#        a_5 = F.pad(a_5, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_5
-        z_6 = self.conv_6(z)
-        a_6 = self.relu(self.bnorm_6(z_6)) + self.res_6(z)
-#        a_6 = F.pad(a_6, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_6
-        z_7 = self.conv_7(z)
-        a_7 = self.relu(self.bnorm_7(z_7)) + self.res_7(z)
-        a_7 = self.mp_3(a_7)
-#        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_7
-        z_8 = self.conv_8(z)
-        a_8 = self.relu(self.bnorm_8(z_8)) + self.res_8(z)
-#        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = a_8
-        z_9 = self.conv_9(z)
-        a_9 = self.relu(self.bnorm_9(z_9)) + self.res_9(z)
-#        a_7 = F.pad(a_7, (0,int(np.ceil(z.size(2)/2 % 1)), 0, int(np.ceil(z.size(3)/2 % 1))))
-        
-        z = self.classifier(a_9)
-        
-        z0 = self.bnormtr_1(self.convtr_1(z))
-        try:
-            z = self.bnormtr_2(self.convtr_2(torch.cat((z0, a_4),1)))
-            z = self.bnormtr_3(self.convtr_3(torch.cat((z, a_3),1)))
-            z = self.bnormtr_4(self.convtr_4(torch.cat((z, a_2),1)))
-        except:
-            #no skip
-            z = self.bnormtr_2(self.convtr_2_ns(z0))
-            z = self.bnormtr_3(self.convtr_3_ns(z))
-            z = self.bnormtr_4(self.convtr_4_ns(z))
-        
-        #print((self.init_padding -1))
-        #print(x.size(2) + (self.init_padding -1))
-        z = z[:,:,int((self.init_padding -1)): int(x.size(2) + (self.init_padding -1)), int((self.init_padding -1)): int(x.size(3) + (self.init_padding -1))]
-        
-        return z
+        z = (x - self.input_mean[None, :, None, None].to(x.device)) / self.input_std[None, :, None, None].to(x.device)
+        up_activation = []
+        for i in range(self.n_conv):
+            # Add all the information required for skip connections
+            up_activation.append(z)
+            z = self._modules['conv%d'%i](z)
+
+        for i in reversed(range(self.n_conv)):
+            z = self._modules['upconv%d'%i](z)
+            # Fix the padding
+            z = z[:, :, :up_activation[i].size(2), :up_activation[i].size(3)]
+            # Add the skip connection
+            if self.use_skip:
+                z = torch.cat([z, up_activation[i]], dim=1)
+        return self.classifier(z)
 
     def detect(self, image):
         """
