@@ -1,6 +1,9 @@
 import torch
 import numpy as np
 
+from torch import nn
+import torch.nn.functional as F
+from torch.autograd import Variable
 from .models import Detector, save_model
 from .utils import load_detection_data, DetectionSuperTuxDataset
 from . import dense_transforms
