@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 
-def extract_peak(heatmap, max_pool_ks=7, min_score=-5, max_det=100):
+def extract_peak(heatmap, max_pool_ks=7, min_score=0.9, max_det=100):
     """
        Your code here.
        Extract local maxima (peaks) in a 2d heatmap.
@@ -130,7 +130,7 @@ class Detector(torch.nn.Module):
             layer = extract_peak(image[i])
             penultimate_res.extend([(i,l[0],l[1],l[2]) for l in layer])
         
-        ultimate_res = sorted(penultimate_res, key=lambda x: x[1])[:100]
+        ultimate_res = sorted(penultimate_res, key=lambda x: x[1], reverse=True)[:100]
         print(ultimate_res)
         input('stop')
         return ultimate_res
