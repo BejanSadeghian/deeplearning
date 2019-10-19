@@ -118,7 +118,7 @@ class FocalLoss(torch.nn.Module):
         p.clamp_(-1*self.eps, self.eps)
         y = target.view(-1)
         fl = -((1-p)**self.gamma) * F.logsigmoid(p) * y - ((p)**self.gamma) * F.logsigmoid(1-p) * (1-y)
-        return fl.sum()
+        return fl.mean()
         
 
 def train(args):
