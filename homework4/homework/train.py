@@ -106,7 +106,7 @@ def train(args):
         sample = model(im.to(device))
         sample.squeeze_(0)
         valid_logger.add_image('Predict',sample.cpu(), global_step=iteration)
-        valid_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
+        valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
         
         train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
         save_model(model)
