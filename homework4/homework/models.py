@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 
-def extract_peak(heatmap, max_pool_ks=7, min_score=0.95, max_det=100):
+def extract_peak(heatmap, max_pool_ks=7, min_score=0.5, max_det=100):
     """
        Your code here.
        Extract local maxima (peaks) in a 2d heatmap.
@@ -27,7 +27,7 @@ def extract_peak(heatmap, max_pool_ks=7, min_score=0.95, max_det=100):
     for i in range(len(top_k.values)):
         response.append((top_k.values[i].item(), indices[top_k.indices[i]][1].item(), (indices[top_k.indices[i]][0].item())))
 #    response = list(set(response))
-#    print(response)
+    print(response)
     return response
 
 

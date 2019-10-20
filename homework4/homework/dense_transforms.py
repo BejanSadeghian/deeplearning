@@ -44,7 +44,7 @@ class ToTensor(object):
         return (F.to_tensor(image),) + args
 
 
-def _draw_detections(det, output_heat, output_size, radius=10):
+def _draw_detections(det, output_heat, output_size, radius=2):
     for d in det:
         # Compute the region to crop from the image
         cx, cy = float(d[0] + d[2] - 1) / 2, float(d[1] + d[3] - 1) / 2
@@ -75,7 +75,7 @@ def to_heatmap(im, *dets, device=None, **kwargs):
 
 
 class ToHeatmap(object):
-    def __init__(self, radius=2):
+    def __init__(self, radius=5):
         self.radius = radius
 
     def __call__(self, image, *args):
