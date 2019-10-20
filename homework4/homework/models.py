@@ -134,7 +134,7 @@ class Detector(torch.nn.Module):
         if sigmoid:
             image = torch.sigmoid(image)
 
-        max_vals = image.max(dim=0)
+        max_vals = image.max(dim=0).values
         argmax_vals = image.argmax(dim=0)
         
         penultimate_res = extract_peak(max_vals)
