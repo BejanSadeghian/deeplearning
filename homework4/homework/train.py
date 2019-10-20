@@ -191,7 +191,8 @@ def train(args):
 #                train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
 
 #        im = sample_image[0].unsqueeze(0)
-        sample = sample_image[0].to(device)#model()
+        sample = sample_image[0]
+        sample.to(device)#model(im.to(device))
 #        sample.squeeze_(0)
         detection = model.detect(sample)
         print(detection)
@@ -218,7 +219,8 @@ def train(args):
             valid_logger.add_scalar('AP_box2', apb2, global_step=iteration)
             
             
-            sample = sample_valid_image[0].to(device)#model(im.to(device))
+            sample = sample_valid_image[0]
+            sample.to(device)#model(im.to(device))
             
             detection = model.detect(sample)
             print(detection)
