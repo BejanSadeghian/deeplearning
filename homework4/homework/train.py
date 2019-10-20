@@ -220,8 +220,8 @@ def train(args):
             valid_logger.add_scalar('AP_box2', apb2, global_step=iteration)
             
             
-            sample = sample_valid_image[0]
-            sample.to(device)#model(im.to(device))
+            sample = sample_valid_image[0].to(device)
+            #model(im.to(device))
             
             detection = model.detect(sample)
             print(detection)
