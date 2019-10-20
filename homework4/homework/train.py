@@ -108,14 +108,16 @@ class calc_metric(object):
 
 class FocalLoss(torch.nn.Module):
     ## Focal Loss written according to https://arxiv.org/pdf/1708.02002.pdf
-    def __init__(self, gamma=0, eps=1e-7):
+    def __init__(self, gamma=0, eps=1e-7, pos_weight=1):
         super(FocalLoss, self).__init__()
+#        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.gamma = gamma
+        self.pos_weight = pos_weight#.to(device)
     
     def forward(self, input, target):
         p = input.view(-1)
         y = target.view(-1)
-        fl = -((1-p)**self.gamma) * F.logsigmoid(p) * y - ((p)**self.gamma) * F.logsigmoid(1-p) * (1-y)
+        fl = -self.pos_weight * ((1-p)**self.gamma) * F.logsigmoid(p) * y - ((p)**self.gamma) * F.logsigmoid(1-p) * (1-y)
         return fl.mean()
         
 
@@ -149,8 +151,8 @@ def train(args):
 #    valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
-    loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
-#    loss = FocalLoss(gamma=4)
+#    loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
+    loss = FocalLoss(gamma=4, pos_weight=torch.Tensor([10]))
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
 #    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)

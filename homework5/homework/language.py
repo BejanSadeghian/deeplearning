@@ -14,7 +14,8 @@ def log_likelihood(model: LanguageModel, some_text: str):
     :param some_text:
     :return: float
     """
-    raise NotImplementedError('log_likelihood')
+    print(model.predict_all(some_text))
+#    raise NotImplementedError('log_likelihood')
 
 
 def sample_random(model: LanguageModel, max_length: int = 100):

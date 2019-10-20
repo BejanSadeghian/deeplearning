@@ -75,7 +75,7 @@ def to_heatmap(im, *dets, device=None, **kwargs):
 
 
 class ToHeatmap(object):
-    def __init__(self, radius=10):
+    def __init__(self, radius=2):
         self.radius = radius
 
     def __call__(self, image, *args):
