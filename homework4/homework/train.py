@@ -153,8 +153,8 @@ def train(args):
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
 #    weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
-#    loss = torch.nn.BCEWithLogitsLoss()
-    loss = FocalLoss(gamma=4)
+    loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
+#    loss = FocalLoss(gamma=4)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
 #    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
@@ -196,7 +196,8 @@ def train(args):
         detection = model.detect(sample)
         print(detection)
         train_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
-        train_logger.add_image('Heatmap',torch.sigmoid(sample.cpu()), global_step=iteration)
+        train_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
+        train_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(sample.cpu()), global_step=iteration)
 #        train_logger.add_image('Detected',sample.cpu(), global_step=iteration)
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
@@ -223,7 +224,8 @@ def train(args):
             print(detection)
             
             valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
-            valid_logger.add_image('Heatmap',torch.sigmoid(sample.cpu()), global_step=iteration)
+            valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
+            valid_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(sample.cpu()), global_step=iteration)
     #        valid_logger.add_image('Detected',sample.cpu(), global_step=iteration)
             valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
             
