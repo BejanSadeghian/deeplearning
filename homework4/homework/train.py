@@ -108,16 +108,12 @@ class calc_metric(object):
 
 class FocalLoss(torch.nn.Module):
     ## Focal Loss written according to https://arxiv.org/pdf/1708.02002.pdf
-    ## Also borrowed the idea of epislon from https://github.com/DingKe/pytorch_workplace/blob/master/focalloss/loss.py
     def __init__(self, gamma=0, eps=1e-7):
         super(FocalLoss, self).__init__()
         self.gamma = gamma
-        self.eps = eps
     
     def forward(self, input, target):
         p = input.view(-1)
-#        p = torch.sigmoid(p)
-#        p.clamp_(self.eps, 1 - self.eps)
         y = target.view(-1)
         fl = -((1-p)**self.gamma) * F.logsigmoid(p) * y - ((p)**self.gamma) * F.logsigmoid(1-p) * (1-y)
         return fl.mean()
@@ -153,7 +149,6 @@ def train(args):
 #    valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
-#    weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
     loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
 #    loss = FocalLoss(gamma=4)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
@@ -170,7 +165,6 @@ def train(args):
     global_step = 0
     for iteration in range(args.epochs):
         print('Epoch {}'.format(iteration))
-#        metric = ConfusionMatrix(5)
         model.train()
         for data_batch in train_gen:  
             p_y = model(data_batch[0].to(device))
@@ -179,7 +173,6 @@ def train(args):
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
             l = loss(p_y.cpu(), actual.float().cpu())
-#            print(l)
             l.backward()
             optimizer.step()
             

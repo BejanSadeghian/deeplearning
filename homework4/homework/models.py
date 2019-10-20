@@ -123,13 +123,6 @@ class Detector(torch.nn.Module):
                     return no more than 100 detections per image
            Hint: Use extract_peak here
         """
-#        print('detect',image.shape)
-#        penultimate_res = []
-#        for i in range(image.shape[0]):
-#            layer = extract_peak(image[i])
-#            penultimate_res.extend([(i,l[0],l[1],l[2]) for l in layer])
-        
-#        ultimate_res = sorted(penultimate_res, key=lambda x: x[1], reverse=True)[:100]
         image = image.unsqueeze(0)
         heatmap = self.forward(image)
         heatmap.squeeze_(0)
@@ -145,7 +138,7 @@ class Detector(torch.nn.Module):
         return ultimate_res
         
             
-    def detect_with_size(self, image):
+    def detect_with_size(self, image, sigmoid=True, min_val=0.2, max_step=21, step_size=2):
         """
            Your code here. (extra credit)
            Implement object detection here.
@@ -154,8 +147,39 @@ class Detector(torch.nn.Module):
                     return no more than 100 detections per image
            Hint: Use extract_peak here
         """
-        raise NotImplementedError('Detector.detect_with_size')
+        image = image.unsqueeze(0)
+        heatmap = self.forward(image)
+        heatmap.squeeze_(0)
+        if sigmoid:
+            heatmap = torch.sigmoid(heatmap)
 
+        heatmap = heatmap.max(dim=0).values
+        
+        ultimate_res = []
+        centers = self.detect(image)
+        for c in centers:
+            W = None #W/2
+            H = None #H/2
+            cx = c[2]
+            cy = c[3]
+            for step in range(1,max_step,step_size):
+                left = heatmap[cx - step,:]
+                right = heatmap[cx + step,:]
+                top = heatmap[cy + step,:]
+                bottom = heatmap[cy - step,:]
+                if (left < min_val or right < min_val) and W is None:
+                    W = step
+                if (top < min_val or bottom < min_val) and H is None:
+                    H = step
+                if H is not None and W is not None:
+                    break
+            if H is None:
+                H = max_step + step_size
+            if W is None:
+                W = max_step + step_size
+            res = (c[0], c[1], c[2], c[3], W, H)
+            ultimate_res.append(res)
+        return ultimate_res
 
 def save_model(model):
     from torch import save
