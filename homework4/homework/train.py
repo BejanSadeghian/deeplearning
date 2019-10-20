@@ -192,7 +192,7 @@ def train(args):
 
 #        im = sample_image[0].unsqueeze(0)
         sample = sample_image[0]
-        sample.to(device)#model(im.to(device))
+        #model(im.to(device))
 #        sample.squeeze_(0)
         detection = model.detect(sample)
         print(detection)
@@ -220,7 +220,7 @@ def train(args):
             
             
             sample = sample_valid_image[0]
-            sample.to(device)#model(im.to(device))
+#            sample.to(device)#model(im.to(device))
             
             detection = model.detect(sample)
             print(detection)

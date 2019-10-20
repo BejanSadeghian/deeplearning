@@ -131,7 +131,7 @@ class Detector(torch.nn.Module):
         
 #        ultimate_res = sorted(penultimate_res, key=lambda x: x[1], reverse=True)[:100]
         image = image.unsqueeze(0)
-        heatmap = self.forward(image)
+        heatmap = self.forward(image.to(device))
         heatmap.squeeze_(0)
         if sigmoid:
             heatmap = torch.sigmoid(heatmap)
