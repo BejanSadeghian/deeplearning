@@ -144,15 +144,15 @@ def train(args):
 #    data_flip = args.data_flip
 #    data_colorjitter = args.data_colorjitter
 #    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor()]) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])
-    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0),  dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
+    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(),  dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
     valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
     
     train_gen = load_detection_data(args.train_path, batch_size=args.batch_size, transform=transformer)
 #    valid_gen = load_detection_data(args.valid_path, batch_size=args.batch_size, transform=valid_transformer) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])]
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
-#    loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
-    loss = FocalLoss(gamma=4, pos_weight=torch.Tensor([10]))
+    loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
+#    loss = FocalLoss(gamma=4, pos_weight=torch.Tensor([10]))
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
 #    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
