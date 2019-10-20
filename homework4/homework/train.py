@@ -191,16 +191,15 @@ def train(args):
 #            if layer.requires_grad:
 #                train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
 
-#        im = sample_image[0].unsqueeze(0)
         sample = sample_image[0].to(device)
-        #model(im.to(device))
-#        sample.squeeze_(0)
+        im = sample_image[0].unsqueeze(0)
+        heatmap = model(im.to(device))
+        heatmap = heatmap.squeeze(0)
         detection = model.detect(sample)
         print(detection)
         train_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
-        train_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
-        train_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(sample.cpu()), global_step=iteration)
-#        train_logger.add_image('Detected',sample.cpu(), global_step=iteration)
+        train_logger.add_image('Heatmap',heatmap.cpu(), global_step=iteration)
+        train_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(heatmap.cpu()), global_step=iteration)
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
         #Validate
@@ -221,15 +220,15 @@ def train(args):
             
             
             sample = sample_valid_image[0].to(device)
-            #model(im.to(device))
-            
+            im = sample_valid_image[0].unsqueeze(0)
+            heatmap = model(im.to(device))
+            heatmap = heatmap.squeeze(0)
             detection = model.detect(sample)
             print(detection)
             
             valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
-            valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
-            valid_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(sample.cpu()), global_step=iteration)
-    #        valid_logger.add_image('Detected',sample.cpu(), global_step=iteration)
+            valid_logger.add_image('Heatmap',heatmap.cpu(), global_step=iteration)
+            valid_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(heatmap.cpu()), global_step=iteration)
             valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
             
             train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
