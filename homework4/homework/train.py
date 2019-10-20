@@ -201,32 +201,33 @@ def train(args):
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
         #Validate
-        print('validate')
-        model.eval()
-        valid_metric = calc_metric(model)
-        valid_metric.add(valid_metric_dataset)
-        ap0, ap1, ap2, apb0, apb1, apb2 = valid_metric.calc()
-        
-        #Record Valid results
-        valid_logger.add_scalar('AP0', ap0, global_step=iteration)
-        valid_logger.add_scalar('AP1', ap1, global_step=iteration)
-        valid_logger.add_scalar('AP2', ap2, global_step=iteration)
-        valid_logger.add_scalar('AP_box0', apb0, global_step=iteration)
-        valid_logger.add_scalar('AP_box1', apb1, global_step=iteration)
-        valid_logger.add_scalar('AP_box2', apb2, global_step=iteration)
-        
-        im = sample_valid_image[0].unsqueeze(0)
-        sample = model(im.to(device))
-        sample.squeeze_(0)
-        detection = model.detect(sample)
-        print(detection)
-        
-        valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
-        valid_logger.add_image('Heatmap',torch.sigmoid(sample.cpu()), global_step=iteration)
-#        valid_logger.add_image('Detected',sample.cpu(), global_step=iteration)
-        valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
-        
-        train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
+        if iteration % 10 == 0:
+            print('validate')
+            model.eval()
+            valid_metric = calc_metric(model)
+            valid_metric.add(valid_metric_dataset)
+            ap0, ap1, ap2, apb0, apb1, apb2 = valid_metric.calc()
+            
+            #Record Valid results
+            valid_logger.add_scalar('AP0', ap0, global_step=iteration)
+            valid_logger.add_scalar('AP1', ap1, global_step=iteration)
+            valid_logger.add_scalar('AP2', ap2, global_step=iteration)
+            valid_logger.add_scalar('AP_box0', apb0, global_step=iteration)
+            valid_logger.add_scalar('AP_box1', apb1, global_step=iteration)
+            valid_logger.add_scalar('AP_box2', apb2, global_step=iteration)
+            
+            im = sample_valid_image[0].unsqueeze(0)
+            sample = model(im.to(device))
+            sample.squeeze_(0)
+            detection = model.detect(sample)
+            print(detection)
+            
+            valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
+            valid_logger.add_image('Heatmap',torch.sigmoid(sample.cpu()), global_step=iteration)
+    #        valid_logger.add_image('Detected',sample.cpu(), global_step=iteration)
+            valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
+            
+            train_logger.add_scalar('LR', optimizer.param_groups[0]['lr'], global_step=iteration)
         save_model(model)
 
 
