@@ -152,24 +152,28 @@ class Detector(torch.nn.Module):
         heatmap.squeeze_(0)
         if sigmoid:
             heatmap = torch.sigmoid(heatmap)
-
         heatmap = heatmap.max(dim=0).values
         
         ultimate_res = []
+        image.squeeze_(0)
         centers = self.detect(image)
+        print(heatmap.shape)
+        dim_H, dim_W = heatmap.shape
+        dim_H -= 1
+        dim_W -= 1
         for c in centers:
             W = None #W/2
             H = None #H/2
             cx = c[2]
             cy = c[3]
             for step in range(1,max_step,step_size):
-                left = heatmap[cx - step,:]
-                right = heatmap[cx + step,:]
-                top = heatmap[cy + step,:]
-                bottom = heatmap[cy - step,:]
-                if (left < min_val or right < min_val) and W is None:
+                left = heatmap[cy,max(0,cx - step)]
+                right = heatmap[cy,min(dim_W,cx + step)]
+                top = heatmap[min(dim_H,cy + step),cx]
+                bottom = heatmap[max(0,cy - step),cx]
+                if (left.cpu() < min_val or right.cpu() < min_val) and W is None:
                     W = step
-                if (top < min_val or bottom < min_val) and H is None:
+                if (top.cpu() < min_val or bottom.cpu() < min_val) and H is None:
                     H = step
                 if H is not None and W is not None:
                     break
