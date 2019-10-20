@@ -114,7 +114,7 @@ class Detector(torch.nn.Module):
                 z = torch.cat([z, up_activation[i]], dim=1)
         return self.classifier(z)
 
-    def detect(self, image, sigmoid=True):
+    def detect(self, image, sigmoid=True, device=device):
         """
            Your code here.
            Implement object detection here.
