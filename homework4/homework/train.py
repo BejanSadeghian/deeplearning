@@ -115,7 +115,8 @@ class FocalLoss(torch.nn.Module):
     
     def forward(self, input, target):
         p = input.view(-1)
-        p.clamp_(self.eps, 1 - self.eps)
+#        p = torch.sigmoid(p)
+#        p.clamp_(self.eps, 1 - self.eps)
         y = target.view(-1)
         fl = -((1-p)**self.gamma) * F.logsigmoid(p) * y - ((p)**self.gamma) * F.logsigmoid(1-p) * (1-y)
         return fl.mean()
@@ -177,6 +178,7 @@ def train(args):
             ## Update weights using the optimizer calculcated gradients
             optimizer.zero_grad()
             l = loss(p_y.cpu(), actual.float().cpu())
+            print(l)
             l.backward()
             optimizer.step()
             
