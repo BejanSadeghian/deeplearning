@@ -153,8 +153,8 @@ def train(args):
     valid_metric_dataset  = DetectionSuperTuxDataset(args.valid_path, min_size=0)
     
 #    weight_tensor = torch.tensor([1-0.52683655, 1-0.02929112, 1-0.4352989, 1-0.0044619, 1-0.00411153]).to(device)
-#    loss = torch.nn.BCEWithLogitsLoss()
-    loss = FocalLoss(gamma=2)
+    loss = torch.nn.BCEWithLogitsLoss()
+#    loss = FocalLoss(gamma=2)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.learning_rate, momentum = args.momentum)
 #    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
 #    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
