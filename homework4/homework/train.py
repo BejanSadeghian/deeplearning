@@ -78,7 +78,7 @@ class PR:
             while cur_rec > recall:
                 precs.append(max_prec)
                 cur_rec -= 1.0 / n_samples
-        return sum(precs) / len(precs)
+        return sum(precs) / max(1,len(precs))
 
 
 class calc_metric(object):
