@@ -87,10 +87,11 @@ class calc_metric(object):
         self.pr_box = [PR() for _ in range(3)]
         self.pr_dist = [PR(is_close=point_close) for _ in range(3)]
         self.model = model
+        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         
     def add(self, dataset):
         for img, *gts in dataset:
-            d = self.model.detect(img)
+            d = self.model.detect(img.to(self.device))
             for i, gt in enumerate(gts):
                 self.pr_box[i].add([j[1:] for j in d if j[0] == i], gt)
                 self.pr_dist[i].add([j[1:] for j in d if j[0] == i], gt)
