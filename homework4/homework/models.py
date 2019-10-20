@@ -130,7 +130,9 @@ class Detector(torch.nn.Module):
 #            penultimate_res.extend([(i,l[0],l[1],l[2]) for l in layer])
         
 #        ultimate_res = sorted(penultimate_res, key=lambda x: x[1], reverse=True)[:100]
+        image = image.unsqueeze(0)
         heatmap = self.forward(image)
+        heatmap.squeeze_(0)
         if sigmoid:
             heatmap = torch.sigmoid(heatmap)
 

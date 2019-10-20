@@ -190,9 +190,9 @@ def train(args):
 #            if layer.requires_grad:
 #                train_logger.add_histogram('layer {}'.format(i), layer.cpu(), global_step=iteration)
 
-        im = sample_image[0].unsqueeze(0)
-        sample = im.to(device)#model()
-        sample.squeeze_(0)
+#        im = sample_image[0].unsqueeze(0)
+        sample = sample_image[0].to(device)#model()
+#        sample.squeeze_(0)
         detection = model.detect(sample)
         print(detection)
         train_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
@@ -217,9 +217,9 @@ def train(args):
             valid_logger.add_scalar('AP_box1', apb1, global_step=iteration)
             valid_logger.add_scalar('AP_box2', apb2, global_step=iteration)
             
-            im = sample_valid_image[0].unsqueeze(0)
-            sample = im.to(device)#model(im.to(device))
-            sample.squeeze_(0)
+            
+            sample = sample_valid_image[0].to(device)#model(im.to(device))
+            
             detection = model.detect(sample)
             print(detection)
             
