@@ -157,7 +157,7 @@ class Detector(torch.nn.Module):
         ultimate_res = []
         image.squeeze_(0)
         centers = self.detect(image)
-        print(heatmap.shape)
+        
         dim_H, dim_W = heatmap.shape
         dim_H -= 1
         dim_W -= 1
