@@ -26,7 +26,7 @@ def extract_peak(heatmap, max_pool_ks=7, min_score=0.5, max_det=100):
     response = []
     for i in range(len(top_k.values)):
         response.append((top_k.values[i].item(), indices[top_k.indices[i]][1].item(), (indices[top_k.indices[i]][0].item())))
-#    response = list(set(response))
+
     print(response)
     return response
 
