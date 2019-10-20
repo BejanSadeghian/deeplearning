@@ -115,7 +115,7 @@ class Detector(torch.nn.Module):
                 z = torch.cat([z, up_activation[i]], dim=1)
         return self.classifier(z)
 
-    def detect(self, image):
+    def detect(self, image, sigmoid=True):
         """
            Your code here.
            Implement object detection here.
@@ -131,7 +131,9 @@ class Detector(torch.nn.Module):
 #            penultimate_res.extend([(i,l[0],l[1],l[2]) for l in layer])
         
 #        ultimate_res = sorted(penultimate_res, key=lambda x: x[1], reverse=True)[:100]
-        
+        if sigmoid:
+            image = torch.sigmoid(image)
+
         max_vals = image.max(dim=0)
         argmax_vals = image.argmax(dim=0)
         

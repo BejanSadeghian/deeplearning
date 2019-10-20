@@ -193,7 +193,7 @@ def train(args):
         sample.squeeze_(0)
 #        detection = model.detect(sample)
         train_logger.add_image('Original',sample_image[0].cpu(), global_step=iteration)
-        train_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
+        train_logger.add_image('Heatmap',torch.sigmoid(sample.cpu()), global_step=iteration)
 #        train_logger.add_image('Detected',sample.cpu(), global_step=iteration)
         train_logger.add_image('Actual',sample_image[1].cpu(), global_step=iteration)
 
@@ -218,7 +218,7 @@ def train(args):
 #        detection = model.detect(sample)
         
         valid_logger.add_image('Original',sample_valid_image[0].cpu(), global_step=iteration)
-        valid_logger.add_image('Heatmap',sample.cpu(), global_step=iteration)
+        valid_logger.add_image('Heatmap',torch.sigmoid(sample.cpu()), global_step=iteration)
 #        valid_logger.add_image('Detected',sample.cpu(), global_step=iteration)
         valid_logger.add_image('Actual',sample_valid_image[1].cpu(), global_step=iteration)
         
