@@ -144,7 +144,7 @@ def train(args):
 #    data_flip = args.data_flip
 #    data_colorjitter = args.data_colorjitter
 #    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(), dense_transforms.ToTensor()]) #, dense_transforms.Normalize(mean=[0.2788, 0.2657, 0.2629], std=[0.205, 0.1932, 0.2237])
-    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(), dense_transforms.ColorJitter(),  dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
+    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(),  dense_transforms.ToTensor(), dense_transforms.ToHeatmap()])  #, dense_transforms.ColorJitter()
     valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor(), dense_transforms.ToHeatmap()]) 
     
     train_gen = load_detection_data(args.train_path, batch_size=args.batch_size, transform=transformer)
