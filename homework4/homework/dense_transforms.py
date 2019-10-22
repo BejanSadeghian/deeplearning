@@ -61,8 +61,8 @@ def _draw_detections(det, output_heat, output_size, radius=2):
         g = g_x[None, :] * g_y[:, None]
 
         # Update the heatmaps
-        size_crop[0, heat_crop >= g] = float(d[2] - d[0]) / 2
-        size_crop[1, heat_crop >= g] = float(d[3] - d[1]) / 2
+        size_crop[0, heat_crop < g] = float(d[2] - d[0]) / 2
+        size_crop[1, heat_crop < g] = float(d[3] - d[1]) / 2
         heat_crop[...] = torch.max(heat_crop, g)
 
 

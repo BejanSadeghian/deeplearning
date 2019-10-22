@@ -1,6 +1,9 @@
 from .models import LanguageModel, AdjacentLanguageModel, Bigram, load_model
 from . import utils
 
+import torch
+from torch.distributions.categorical import Categorical
+import string
 
 def log_likelihood(model: LanguageModel, some_text: str):
     """
@@ -14,9 +17,24 @@ def log_likelihood(model: LanguageModel, some_text: str):
     :param some_text:
     :return: float
     """
-    print(model.predict_all(some_text))
+    start = ''
+    
+    prob_matrix = model.predict_all(start)[:,-1].view((-1,1))
+    for i in range(len(some_text)-1):
+        start += some_text[i]
+#        print(prob_matrix)
+        prob_matrix = torch.cat((prob_matrix, model.predict_all(start)[:,-1].view((-1,1))), axis=1)
+#    prob_matrix = model.predict_all(some_text)[:,:-1]
+#    print(some_text)
+#    print(prob_matrix[:,[0]])
+    str_one_hot = utils.one_hot(some_text)
+#    print(str_one_hot.shape)
+    probabilities = prob_matrix * str_one_hot
+#    print(probabilities.sum())
+    return probabilities.sum()
 #    raise NotImplementedError('log_likelihood')
 
+#[-10.1687,,,]
 
 def sample_random(model: LanguageModel, max_length: int = 100):
     """
@@ -29,7 +47,23 @@ def sample_random(model: LanguageModel, max_length: int = 100):
     :param max_length: The maximum sentence length
     :return: A string
     """
-    raise NotImplementedError('sample_random')
+    vocab = string.ascii_lowercase + ' .'
+    out_str = ''
+    for i in range(max_length):
+        prob_matrix = model.predict_all(out_str)
+        dist = Categorical(prob_matrix[:,-1])
+        new_char = vocab[dist.sample().item()]
+#        print(new_char)
+        out_str += new_char
+        if new_char == '.':
+            break
+    
+    return out_str
+#    print(log_likelihood(model, 'ab'))
+#    
+    
+#    print(dist.sample())
+#    raise NotImplementedError('sample_random')
 
 
 class TopNHeap:
@@ -72,7 +106,63 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
                                    This option favors longer strings.
     :return: A list of strings of size beam_size
     """
-    raise NotImplementedError('beam_search')
+    return None
+#    vocab = string.ascii_lowercase + ' .'    
+#    h = TopNHeap(beam_size)
+#    h.add(-1e6)
+#    track = [('',-1e6)]
+#    end_bool = False
+#    for i in range(max_length):
+#        period_counter = 0
+#        for t in track:
+#            e = t[0] #the string
+#            if len(e) > 0:
+#                if e[-1] == '.':
+#                    continue
+#                    period_counter += 1
+#                else:
+#                    for v in vocab:
+#                        text = e + v
+#                        if average_log_likelihood:
+#                            ll = log_likelihood(model, text) / len(text)
+#                        else:
+#                            ll = log_likelihood(model, text)
+#                        if len(h.elements) < beam_size:
+#                            h.add(ll)
+#                            track.append((text,ll))
+#                        elif h.elements[0] < ll:
+#                            track.append((text,ll)) 
+#                            track = sorted(track, key=lambda x: x[1])
+#                            track = track[1:]
+#                            h.add(ll)
+#            else:
+#                for v in vocab:
+#                    text = e + v
+#                    if average_log_likelihood:
+#                        ll = log_likelihood(model, text) / len(text)
+#                    else:
+#                        ll = log_likelihood(model, text)
+#                    if len(h.elements) < beam_size:
+#                        h.add(ll)
+#                        track.append((text,ll))
+#                    elif h.elements[0] < ll:
+#                        track.append((text,ll)) 
+#                        track = sorted(track, key=lambda x: x[1])
+#                        track = track[1:]
+#                        h.add(ll)
+#            if period_counter == beam_size:
+#                end_bool = True
+#        if end_bool:
+#            break
+#    track = sorted(track, key=lambda x: x[1])
+#    return [x for x,y in track][:n_results]
+            
+            
+                
+                
+    
+    
+#    raise NotImplementedError('beam_search')
 
 
 if __name__ == "__main__":
