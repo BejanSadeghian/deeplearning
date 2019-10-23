@@ -132,7 +132,7 @@ class Detector(torch.nn.Module):
         max_vals = heatmap.max(dim=0).values
         argmax_vals = heatmap.argmax(dim=0)
         
-        penultimate_res = extract_peak(max_vals)
+        penultimate_res = extract_peak(max_vals, max_pool_ks=15) #TODO: Testing 10/22
         ultimate_res = [(argmax_vals[y,x],s,x,y) for s,x,y in penultimate_res]
         
         return ultimate_res

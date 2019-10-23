@@ -22,19 +22,13 @@ def log_likelihood(model: LanguageModel, some_text: str):
     prob_matrix = model.predict_all(start)[:,-1].view((-1,1))
     for i in range(len(some_text)-1):
         start += some_text[i]
-#        print(prob_matrix)
         prob_matrix = torch.cat((prob_matrix, model.predict_all(start)[:,-1].view((-1,1))), axis=1)
 #    prob_matrix = model.predict_all(some_text)[:,:-1]
-#    print(some_text)
-#    print(prob_matrix[:,[0]])
-    str_one_hot = utils.one_hot(some_text)
-#    print(str_one_hot.shape)
-    probabilities = prob_matrix * str_one_hot
-#    print(probabilities.sum())
-    return probabilities.sum()
-#    raise NotImplementedError('log_likelihood')
 
-#[-10.1687,,,]
+    str_one_hot = utils.one_hot(some_text)
+    probabilities = prob_matrix * str_one_hot
+    return probabilities.sum()
+
 
 def sample_random(model: LanguageModel, max_length: int = 100):
     """
@@ -53,17 +47,12 @@ def sample_random(model: LanguageModel, max_length: int = 100):
         prob_matrix = model.predict_all(out_str)
         dist = Categorical(prob_matrix[:,-1])
         new_char = vocab[dist.sample().item()]
-#        print(new_char)
         out_str += new_char
         if new_char == '.':
             break
     
     return out_str
-#    print(log_likelihood(model, 'ab'))
-#    
-    
-#    print(dist.sample())
-#    raise NotImplementedError('sample_random')
+
 
 
 class TopNHeap:
@@ -106,56 +95,50 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
                                    This option favors longer strings.
     :return: A list of strings of size beam_size
     """
-    return None
-#    vocab = string.ascii_lowercase + ' .'    
-#    h = TopNHeap(beam_size)
-#    h.add(-1e6)
-#    track = [('',-1e6)]
-#    end_bool = False
-#    for i in range(max_length):
-#        period_counter = 0
-#        for t in track:
-#            e = t[0] #the string
-#            if len(e) > 0:
-#                if e[-1] == '.':
-#                    continue
-#                    period_counter += 1
-#                else:
-#                    for v in vocab:
-#                        text = e + v
-#                        if average_log_likelihood:
-#                            ll = log_likelihood(model, text) / len(text)
-#                        else:
-#                            ll = log_likelihood(model, text)
-#                        if len(h.elements) < beam_size:
-#                            h.add(ll)
-#                            track.append((text,ll))
-#                        elif h.elements[0] < ll:
-#                            track.append((text,ll)) 
-#                            track = sorted(track, key=lambda x: x[1])
-#                            track = track[1:]
-#                            h.add(ll)
-#            else:
-#                for v in vocab:
-#                    text = e + v
-#                    if average_log_likelihood:
-#                        ll = log_likelihood(model, text) / len(text)
-#                    else:
-#                        ll = log_likelihood(model, text)
-#                    if len(h.elements) < beam_size:
-#                        h.add(ll)
-#                        track.append((text,ll))
-#                    elif h.elements[0] < ll:
-#                        track.append((text,ll)) 
-#                        track = sorted(track, key=lambda x: x[1])
-#                        track = track[1:]
-#                        h.add(ll)
-#            if period_counter == beam_size:
-#                end_bool = True
-#        if end_bool:
-#            break
-#    track = sorted(track, key=lambda x: x[1])
-#    return [x for x,y in track][:n_results]
+    from heapq import heappush, heapreplace
+    import heapq
+    import operator
+    
+    def get_next_letters(string, beam_size, model, vocab):
+        next_prob = model.predict_all(string)[:,-1]
+        return list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0], next_prob
+    
+    vocab = string.ascii_lowercase + ' .'    
+    h = TopNHeap(beam_size)
+    #Prime the heap
+    init_letters, probabilities = get_next_letters('', beam_size, model, vocab)
+    track = []
+    for i in init_letters:
+        h.add(probabilities[i])
+        track.append((vocab[i], probabilities[i]))
+    end_bool = False
+    for i in range(max_length):
+        period_counter = 0
+        for t in track:
+            e = t[0] #the string
+            if e[-1] == '.':
+                continue
+                period_counter += 1
+            else:
+                test_nodes, probabilities = get_next_letters(e, beam_size, model, vocab)
+                for v in test_nodes:
+                    text = e + vocab[v]
+                    ll = log_likelihood(model, text) / len(text) if average_log_likelihood else log_likelihood(model, text)
+                    if len(h.elements) < beam_size and text not in [x for x,y in track]:
+                        h.add(ll)
+                        track.append((text,ll))
+                    elif h.elements[0] < ll and text not in [x for x,y in track]:
+                        track.append((text,ll)) 
+                        track = sorted(track, key=lambda x: x[1])
+                        track = track[1:]
+                        h.add(ll)        
+
+            if period_counter == beam_size:
+                end_bool = True
+        if end_bool:
+            break
+    track = sorted(track, key=lambda x: x[1])
+    return [x for x,y in track][:n_results]
             
             
                 
