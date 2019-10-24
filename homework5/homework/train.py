@@ -9,7 +9,7 @@ import random
 def train(args):
     from os import path
     import torch.utils.tensorboard as tb
-    model = TCN()
+    model = TCN().to(device)
     train_logger, valid_logger = None, None
     if args.log_dir is not None:
         train_logger = tb.SummaryWriter(path.join(args.log_dir, 'train_'+args.log_suffix), flush_secs=1)
@@ -42,8 +42,9 @@ def train(args):
         n_batches = len(data_ind) // batch_size
         for b in range(n_batches):
             train_ind = data_ind[b * batch_size : (b+1) * batch_size]
-            train_data = train_data[train_ind,:,:-1]
-            train_label = train_data[train_ind,:,1:]
+            print(train_ind)
+            train_data = train_data[train_ind,:,:-1].to(device)
+            train_label = train_data[train_ind,:,1:].to(device)
             
             o = model(train_data)
             
