@@ -26,7 +26,7 @@ def train(args):
     valid_data = SpeechDataset(args.valid_path+'/valid.txt', transform=one_hot)
     
     ##Optimizer
-    optimizer = torch.optim.Adam(tcn.parameters(), lr=args.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     
     ##Loss
     loss = torch.nn.CrossEntropyLoss()
@@ -44,7 +44,7 @@ def train(args):
             train_data = train_data[train_ind,:,:-1]
             train_label = train_data[train_ind,:,1:]
             
-            o = tcn(train_data)
+            o = model(train_data)
             
             loss = loss(o, train_label)
             l
