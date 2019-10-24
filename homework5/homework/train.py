@@ -9,6 +9,7 @@ import random
 def train(args):
     from os import path
     import torch.utils.tensorboard as tb
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = TCN().to(device)
     train_logger, valid_logger = None, None
     if args.log_dir is not None:
@@ -22,8 +23,8 @@ def train(args):
     """
     
     ##Data
-    train_data = SpeechDataset(args.train_path+'/train.txt', transform=one_hot)
-    valid_data = SpeechDataset(args.valid_path+'/valid.txt', transform=one_hot)
+    train_gen = SpeechDataset(args.train_path+'/train.txt', transform=one_hot)
+    valid_gen = SpeechDataset(args.valid_path+'/valid.txt', transform=one_hot)
     
     ##Optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -32,20 +33,26 @@ def train(args):
     loss = torch.nn.CrossEntropyLoss()
     
     #Data index
-    data_ind = list(range(len(train_data)))
+    data_ind = list(range(len(train_gen)))
     batch_size = args.batch_size
     epochs = args.epochs
     global_step = 0
     
     for e in range(epochs):
+        print('Epoch',e)
         random.shuffle(data_ind)
         n_batches = len(data_ind) // batch_size
         for b in range(n_batches):
             train_ind = data_ind[b * batch_size : (b+1) * batch_size]
-            print(train_ind)
-            train_data = train_data[train_ind,:,:-1].to(device)
-            train_label = train_data[train_ind,:,1:].to(device)
-            
+            batch = []
+            for i in train_ind:
+                batch.append(train_gen[i])
+            batch = torch.stack(batch, dim=0)
+            print(batch.shape)
+            train_data = batch[:,:,:-1].to(device)
+            train_label = batch[:,:,1:].to(device)
+            print(train_data.shape)
+            print(train_label.shape)
             o = model(train_data)
             
             loss = loss(o, train_label)
