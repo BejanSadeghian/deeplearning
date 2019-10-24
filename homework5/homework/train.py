@@ -48,13 +48,13 @@ def train(args):
             for i in train_ind:
                 batch.append(train_gen[i])
             batch = torch.stack(batch, dim=0).to(device)
-            print(batch.shape)
+#            print(batch.shape)
             train_data = batch[:,:,:-1]
             train_label = batch[:,:,1:].argmax(dim=1)
-            print(train_data.shape)
-            print(train_label.shape)
+#            print(train_data.shape)
+#            print(train_label.shape)
             o = model(train_data)
-            print(o.shape)
+#            print(o.shape)
             l = loss(o, train_label)
             optimizer.zero_grad()
             l.backward()
@@ -63,6 +63,9 @@ def train(args):
             train_logger.add_scalar('Loss', l, global_step = global_step)
             
             global_step += 1
+        print('validate')
+        for v in valid_gen:
+            model.predict_all(v)
             
     save_model(model)
 
