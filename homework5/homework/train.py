@@ -22,8 +22,8 @@ def train(args):
     """
     
     ##Data
-    train_data = SpeechDataset(args.train_path+'\train.txt', transform=one_hot)
-    valid_data = SpeechDataset(args.valid_path+'\valid.txt', transform=one_hot)
+    train_data = SpeechDataset(args.train_path+'/train.txt', transform=one_hot)
+    valid_data = SpeechDataset(args.valid_path+'/valid.txt', transform=one_hot)
     
     ##Optimizer
     optimizer = torch.optim.Adam(tcn.parameters(), lr=args.learning_rate)
