@@ -38,10 +38,10 @@ def train(args):
     global_step = 0
     
     for e in range(epochs):
-        shuffled = random.shuffle(data_ind)
-        n_batches = len(shuffled) // batch_size
+        random.shuffle(data_ind)
+        n_batches = len(data_ind) // batch_size
         for b in n_batches:
-            train_ind = shuffled[b * batch_size : (b+1) * batch_size]
+            train_ind = data_ind[b * batch_size : (b+1) * batch_size]
             train_data = train_data[train_ind,:,:-1]
             train_label = train_data[train_ind,:,1:]
             
