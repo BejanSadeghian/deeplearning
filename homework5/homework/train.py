@@ -50,11 +50,11 @@ def train(args):
             batch = torch.stack(batch, dim=0).to(device)
             print(batch.shape)
             train_data = batch[:,:,:-1]
-            train_label = batch[:,:,1:]
+            train_label = batch[:,:,1:].argmax(dim=1)
             print(train_data.shape)
             print(train_label.shape)
             o = model(train_data)
-            
+            print(o.shape)
             l = loss(o, train_label)
             optimizer.zero_grad()
             l.backward()
