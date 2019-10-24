@@ -82,7 +82,7 @@ class TCN(torch.nn.Module, LanguageModel):
         def forward(self, x):
             return self.network(x) + x
 
-    def __init__(self, layers, char_set):
+    def __init__(self, layers=[32,64,128], char_set=utils.vocab):
         """
         Your code here
 
