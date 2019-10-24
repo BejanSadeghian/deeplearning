@@ -34,9 +34,10 @@ def train(args):
     #Data index
     data_ind = list(range(len(train_data)))
     batch_size = args.batch_size
+    epochs = args.epochs
     global_step = 0
     
-    for e in epoch:
+    for e in range(epochs):
         shuffled = random.shuffle(data_ind)
         n_batches = len(shuffled) // batch_size
         for b in n_batches:
