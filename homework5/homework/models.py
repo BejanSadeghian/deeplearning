@@ -72,6 +72,7 @@ class TCN(torch.nn.Module, LanguageModel):
             :param kernel_size: Conv1d parameter
             :param dilation: Conv1d parameter
             """
+            super().__init__()
             L = [
                     torch.nn.ConstantPad1d((2*dilation,0),0),
                     torch.nn.Conv1d(in_channels,out_channels,kernel_size, dilation=dilation),
@@ -90,6 +91,7 @@ class TCN(torch.nn.Module, LanguageModel):
         Hint: The probability of the first character should be a parameter
         use torch.nn.Parameter to explicitly create it.
         """
+        super().__init__()
         
         c = len(char_set)
         L = []
