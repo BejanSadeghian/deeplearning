@@ -79,9 +79,16 @@ class TCN(torch.nn.Module, LanguageModel):
                     torch.nn.ReLU()
                     ]
             self.network = torch.nn.Sequential(*L)
+            
+            self.downsample = None
+            if in_channels != out_channels:
+                self.downsample= torch.nn.Conv1d(in_channels, out_channels, 1)
 
         def forward(self, x):
-            return self.network(x) + x
+            identity = x
+            if self.downsample is not None:
+                identity = self.downsample(identity)
+            return self.network(x) + identity
 
     def __init__(self, layers=[32,64,128], char_set=utils.vocab):
         """

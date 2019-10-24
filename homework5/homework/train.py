@@ -47,16 +47,15 @@ def train(args):
             batch = []
             for i in train_ind:
                 batch.append(train_gen[i])
-            batch = torch.stack(batch, dim=0)
+            batch = torch.stack(batch, dim=0).to(device)
             print(batch.shape)
-            train_data = batch[:,:,:-1].to(device)
-            train_label = batch[:,:,1:].to(device)
+            train_data = batch[:,:,:-1]
+            train_label = batch[:,:,1:]
             print(train_data.shape)
             print(train_label.shape)
             o = model(train_data)
             
-            loss = loss(o, train_label)
-            l
+            l = loss(o, train_label)
             optimizer.zero_grad()
             l.backward()
             optimizer.step()
