@@ -2,6 +2,7 @@ import torch
 
 from . import utils
 
+import numpy as np
 
 class LanguageModel(object):
     def predict_all(self, some_text):
@@ -71,12 +72,17 @@ class TCN(torch.nn.Module, LanguageModel):
             :param kernel_size: Conv1d parameter
             :param dilation: Conv1d parameter
             """
-            raise NotImplementedError('CausalConv1dBlock.__init__')
+            L = [
+                    torch.nn.ConstantPad1d((2*dilation,0),0),
+                    torch.nn.Conv1d(in_channels,out_channels,kernel_size, dilation=dilation),
+                    torch.nn.ReLU()
+                    ]
+            self.network = torch.nn.Sequential(*L)
 
         def forward(self, x):
-            raise NotImplementedError('CausalConv1dBlock.forward')
+            return self.network(x) + x
 
-    def __init__(self):
+    def __init__(self, layers, char_set):
         """
         Your code here
 
@@ -84,7 +90,17 @@ class TCN(torch.nn.Module, LanguageModel):
         Hint: The probability of the first character should be a parameter
         use torch.nn.Parameter to explicitly create it.
         """
-        raise NotImplementedError('TCN.__init__')
+        
+        c = len(char_set)
+        L = []
+        current_dialation = 1
+        for l in layers:
+            L.append(self.CausalConv1dBlock(c,l,3,current_dialation))
+            current_dialation *= 2
+            c = l
+        self.network = torch.nn.Sequential(*L)
+        self.classifier = torch.nn.Conv1d(c,len(char_set),1)
+            
 
     def forward(self, x):
         """
@@ -94,7 +110,7 @@ class TCN(torch.nn.Module, LanguageModel):
         @x: torch.Tensor((B, vocab_size, L)) a batch of one-hot encodings
         @return torch.Tensor((B, vocab_size, L+1)) a batch of log-likelihoods or logits
         """
-        raise NotImplementedError('TCN.forward')
+        return self.classifier(self.network(x)) 
 
     def predict_all(self, some_text):
         """
@@ -103,7 +119,9 @@ class TCN(torch.nn.Module, LanguageModel):
         @some_text: a string
         @return torch.Tensor((vocab_size, len(some_text)+1)) of log-likelihoods (not logits!)
         """
-        raise NotImplementedError('TCN.predict_all')
+        x = torch.tensor(np.array(list(some_text))[None,:] == np.array(utils.vocab)[:,None]).float()
+        prob = self.forward(x)
+        return (prob/prob.sum(dim=0, keepdim=True)).log()
 
 
 def save_model(model):
