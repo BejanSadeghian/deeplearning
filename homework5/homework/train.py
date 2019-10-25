@@ -64,8 +64,10 @@ def train(args):
             
             global_step += 1
         print('validate')
+        ll = []
         for v in valid_gen:
-            model.predict_all(v)
+            ll.append(float((model.predict_all(v)[:,:,:-1] * one_hot(v))/len(v)))
+        
             
     save_model(model)
 

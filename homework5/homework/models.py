@@ -100,6 +100,7 @@ class TCN(torch.nn.Module, LanguageModel):
         """
         super().__init__()
         
+        self.char_set = char_set
         c = len(char_set)
         L = []
         current_dialation = 1
@@ -119,7 +120,7 @@ class TCN(torch.nn.Module, LanguageModel):
         @x: torch.Tensor((B, vocab_size, L)) a batch of one-hot encodings
         @return torch.Tensor((B, vocab_size, L+1)) a batch of log-likelihoods or logits
         """
-        return self.classifier(self.network(x)) 
+        return torch.stack(torch.nn.Parameter(torch.ones(len(self.char_set))), self.classifier(self.network(x)), dim=2)
 
     def predict_all(self, some_text):
         """
