@@ -1,4 +1,5 @@
 import torch
+from torch.distributions.categorical import Categorical
 
 from . import utils
 
@@ -100,6 +101,7 @@ class TCN(torch.nn.Module, LanguageModel):
         """
         super().__init__()
         
+        self.init_prob = torch.nn.Parameter(torch.ones(len(char_set))) / len(char_set)
         self.char_set = char_set
         c = len(char_set)
         L = []
@@ -120,10 +122,10 @@ class TCN(torch.nn.Module, LanguageModel):
         @x: torch.Tensor((B, vocab_size, L)) a batch of one-hot encodings
         @return torch.Tensor((B, vocab_size, L+1)) a batch of log-likelihoods or logits
         """
-        B = x.shape[0]
+        B, S, L = x.shape
         prob = self.classifier(self.network(x))
         #print('test',prob.shape)
-        init = torch.ones((B,len(self.char_set)))[:,:,None] / len(self.char_set)
+        init = self.init_prob.repeat(B).view(-1, len(self.char_set), 1) #torch.ones((B,len(self.char_set)))[:,:,None] / len(self.char_set)
         output = torch.cat((init,prob ), dim=2)
         return output
 
@@ -135,13 +137,15 @@ class TCN(torch.nn.Module, LanguageModel):
         @some_text: a string
         @return torch.Tensor((vocab_size, len(some_text)+1)) of log-likelihoods (not logits!)
         """
+        vocab = self.char_set
         
         try:
             if len(some_text) == 0:
-                x = torch.zeros((1,len(utils.vocab),0))
-            else:
-                x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(utils.vocab))[:,None]).float()
-                x = x[None,:,:]
+                dist = Categorical(self.init_prob)
+                new_char = vocab[dist.sample().item()]
+                some_text += new_char
+            x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
+            x = x[None,:,:]
             prob = self.forward(x)
             #print(prob)
             prob = prob.squeeze()
