@@ -120,7 +120,12 @@ class TCN(torch.nn.Module, LanguageModel):
         @x: torch.Tensor((B, vocab_size, L)) a batch of one-hot encodings
         @return torch.Tensor((B, vocab_size, L+1)) a batch of log-likelihoods or logits
         """
-        return torch.stack(torch.nn.Parameter(torch.ones(len(self.char_set))), self.classifier(self.network(x)), dim=2)
+        B = x.shape[0]
+        prob = self.classifier(self.network(x))
+        init = torch.ones((B,len(self.char_set)))[:,:,None]
+        output = torch.cat((init,prob ), dim=2)
+        return output
+
 
     def predict_all(self, some_text):
         """
