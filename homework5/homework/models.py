@@ -144,12 +144,15 @@ class TCN(torch.nn.Module, LanguageModel):
                 dist = Categorical(self.init_prob)
                 new_char = vocab[dist.sample().item()]
                 some_text += new_char
-            x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
-            x = x[None,:,:]
-            prob = self.forward(x)
-            #print(prob)
-            prob = prob.squeeze()
-            return(torch.nn.functional.log_softmax(prob,dim=0))
+                x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
+                x = x[None,:,:]
+            else:
+                x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
+                x = x[None,:,:]
+                prob = self.forward(x)
+                #print(prob)
+                prob = prob.squeeze()
+                return(torch.nn.functional.log_softmax(prob,dim=0))
         except Exception as e:
             print(len(some_text))
             print(e)
