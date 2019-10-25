@@ -122,7 +122,8 @@ class TCN(torch.nn.Module, LanguageModel):
         """
         B = x.shape[0]
         prob = self.classifier(self.network(x))
-        init = torch.ones((B,len(self.char_set)))[:,:,None]
+        #print('test',prob.shape)
+        init = torch.ones((B,len(self.char_set)))[:,:,None] / len(self.char_set)
         output = torch.cat((init,prob ), dim=2)
         return output
 
@@ -134,10 +135,21 @@ class TCN(torch.nn.Module, LanguageModel):
         @some_text: a string
         @return torch.Tensor((vocab_size, len(some_text)+1)) of log-likelihoods (not logits!)
         """
-        x = torch.tensor(np.array(list(some_text))[None,:] == np.array(utils.vocab)[:,None]).float()
-        prob = self.forward(x)
-        prob = prob.squeeze()
-        return torch.nn.functional.log_softmax(prob, dim=1)#(prob/prob.sum(dim=0, keepdim=True)).log()
+        
+        try:
+            if len(some_text) == 0:
+                x = torch.zeros((1,len(utils.vocab),0))
+            else:
+                x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(utils.vocab))[:,None]).float()
+                x = x[None,:,:]
+            prob = self.forward(x)
+            #print(prob)
+            prob = prob.squeeze()
+            return(torch.nn.functional.log_softmax(prob,dim=0))
+        except Exception as e:
+            print(len(some_text))
+            print(e)
+
 
 
 def save_model(model):
