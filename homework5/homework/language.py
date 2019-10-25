@@ -95,50 +95,51 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
                                    This option favors longer strings.
     :return: A list of strings of size beam_size
     """
-    from heapq import heappush, heapreplace
-    import heapq
-    import operator
-    
-    def get_next_letters(string, beam_size, model, vocab):
-        next_prob = model.predict_all(string)[:,-1]
-        return list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0], next_prob
-    
-    vocab = string.ascii_lowercase + ' .'    
-    h = TopNHeap(beam_size)
-    #Prime the heap
-    init_letters, probabilities = get_next_letters('', beam_size, model, vocab)
-    track = []
-    for i in init_letters:
-        h.add(probabilities[i])
-        track.append((vocab[i], probabilities[i]))
-    end_bool = False
-    for i in range(max_length):
-        period_counter = 0
-        for t in track:
-            e = t[0] #the string
-            if e[-1] == '.':
-                continue
-                period_counter += 1
-            else:
-                test_nodes, probabilities = get_next_letters(e, beam_size, model, vocab)
-                for v in test_nodes:
-                    text = e + vocab[v]
-                    ll = log_likelihood(model, text) / len(text) if average_log_likelihood else log_likelihood(model, text)
-                    if len(h.elements) < beam_size and text not in [x for x,y in track]:
-                        h.add(ll)
-                        track.append((text,ll))
-                    elif h.elements[0] < ll and text not in [x for x,y in track]:
-                        track.append((text,ll)) 
-                        track = sorted(track, key=lambda x: x[1])
-                        track = track[1:]
-                        h.add(ll)        
-
-            if period_counter == beam_size:
-                end_bool = True
-        if end_bool:
-            break
-    track = sorted(track, key=lambda x: x[1])
-    return [x for x,y in track][:n_results]
+    return None
+#    from heapq import heappush, heapreplace
+#    import heapq
+#    import operator
+#    
+#    def get_next_letters(string, beam_size, model, vocab):
+#        next_prob = model.predict_all(string)[:,-1]
+#        return list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0], next_prob
+#    
+#    vocab = string.ascii_lowercase + ' .'    
+#    h = TopNHeap(beam_size)
+#    #Prime the heap
+#    init_letters, probabilities = get_next_letters('', beam_size, model, vocab)
+#    track = []
+#    for i in init_letters:
+#        h.add(probabilities[i])
+#        track.append((vocab[i], probabilities[i]))
+#    end_bool = False
+#    for i in range(max_length):
+#        period_counter = 0
+#        for t in track:
+#            e = t[0] #the string
+#            if e[-1] == '.':
+#                continue
+#                period_counter += 1
+#            else:
+#                test_nodes, probabilities = get_next_letters(e, beam_size, model, vocab)
+#                for v in test_nodes:
+#                    text = e + vocab[v]
+#                    ll = log_likelihood(model, text) / len(text) if average_log_likelihood else log_likelihood(model, text)
+#                    if len(h.elements) < beam_size and text not in [x for x,y in track]:
+#                        h.add(ll)
+#                        track.append((text,ll))
+#                    elif h.elements[0] < ll and text not in [x for x,y in track]:
+#                        track.append((text,ll)) 
+#                        track = sorted(track, key=lambda x: x[1])
+#                        track = track[1:]
+#                        h.add(ll)        
+#
+#            if period_counter == beam_size:
+#                end_bool = True
+#        if end_bool:
+#            break
+#    track = sorted(track, key=lambda x: x[1])
+#    return [x for x,y in track][:n_results]
             
             
                 
