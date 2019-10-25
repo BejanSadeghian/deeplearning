@@ -136,7 +136,8 @@ class TCN(torch.nn.Module, LanguageModel):
         """
         x = torch.tensor(np.array(list(some_text))[None,:] == np.array(utils.vocab)[:,None]).float()
         prob = self.forward(x)
-        return (prob/prob.sum(dim=0, keepdim=True)).log()
+        prob = prob.squeeze()
+        return torch.nn.functional.log_softmax(prob, dim=1)#(prob/prob.sum(dim=0, keepdim=True)).log()
 
 
 def save_model(model):
