@@ -50,6 +50,7 @@ def train(args):
     
     for e in range(epochs):
         print('Epoch',e)
+        model.train()
         random.shuffle(data_ind)
         n_batches = len(data_ind) // batch_size
         for b in range(n_batches):
@@ -72,6 +73,7 @@ def train(args):
             
             global_step += 1
         
+        model.eval()
         if e % 10 == 0:
             nll = get_nll(train_gen, model, vocab, device)
             if train_logger:
