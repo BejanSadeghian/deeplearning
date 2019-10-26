@@ -152,6 +152,7 @@ class TCNGrader(Grader):
         all_ll = self.tcn.predict_all(s).detach().cpu().numpy()
         for i in range(len(s)+1):
             ll = self.tcn.predict_next(s[:i]).detach().cpu().numpy()
+#            print(ll, all_ll[:,i])
             assert np.allclose(all_ll[:, i], ll), \
                 "predict_next %s inconsistent with predict_all %s"%(ll, all_ll[:, i])
 

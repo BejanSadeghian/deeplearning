@@ -40,7 +40,6 @@ class Bigram(LanguageModel):
         self.first, self.transition = torch.load(path.join(path.dirname(path.abspath(__file__)), 'bigram.th'))
 
     def predict_all(self, some_text):
-        print(some_text)
         return torch.cat((self.first[:, None], self.transition.t().matmul(utils.one_hot(some_text))), dim=1)
 
 
@@ -92,7 +91,7 @@ class TCN(torch.nn.Module, LanguageModel):
                 identity = self.downsample(identity)
             return self.network(x) + identity
 
-    def __init__(self, layers=[32,64,128], char_set=utils.vocab):
+    def __init__(self, layers=[32,32,32], char_set=utils.vocab):
         """
         Your code here
 
@@ -124,11 +123,14 @@ class TCN(torch.nn.Module, LanguageModel):
         @return torch.Tensor((B, vocab_size, L+1)) a batch of log-likelihoods or logits
         """
         B, S, L = x.shape
-        prob = self.classifier(self.network(x))
-        #print('test',prob.shape)
-        init = self.init_prob.repeat(B).view(-1, len(self.char_set), 1) #torch.ones((B,len(self.char_set)))[:,:,None] / len(self.char_set)
-        output = torch.cat((init,prob ), dim=2)
-        return output
+        if L == 0:
+            init = self.init_prob.repeat(B).view(-1, len(self.char_set), 1)
+            return init
+        else:
+            prob = self.classifier(self.network(x))
+            init = self.init_prob.repeat(B).view(-1, len(self.char_set), 1)
+            output = torch.cat((init,prob ), dim=2)
+            return output
 
 
     def predict_all(self, some_text):
@@ -140,18 +142,13 @@ class TCN(torch.nn.Module, LanguageModel):
         """
         vocab = self.char_set
         
-        if len(some_text) == 0:
-            dist = Categorical(self.init_prob)
-            new_char = vocab[dist.sample().item()]
-            some_text += new_char
-            x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
-            prob = x[:,:]
+        if len(some_text) == 0:            
+            prob = self.init_prob.view(len(vocab),1) 
             return(torch.nn.functional.log_softmax(prob,dim=0))
         else:
             x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
             x = x[None,:,:]
             prob = self.forward(x)
-            #print(prob)
             prob = prob.squeeze()
             return(torch.nn.functional.log_softmax(prob,dim=0))
        
