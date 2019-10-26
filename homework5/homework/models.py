@@ -141,14 +141,14 @@ class TCN(torch.nn.Module, LanguageModel):
         @return torch.Tensor((vocab_size, len(some_text)+1)) of log-likelihoods (not logits!)
         """
         vocab = self.char_set
-        
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         if len(some_text) == 0:            
             prob = self.init_prob.view(len(vocab),1) 
             return(torch.nn.functional.log_softmax(prob,dim=0))
         else:
             x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
             x = x[None,:,:]
-            prob = self.forward(x)
+            prob = self.forward(x.to(device))
             prob = prob.squeeze()
             return(torch.nn.functional.log_softmax(prob,dim=0))
        
