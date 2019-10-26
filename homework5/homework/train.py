@@ -1,16 +1,19 @@
 import torch
 import torch.nn as nn
 from .models import TCN, save_model
-from .utils import SpeechDataset, one_hot
+from .utils import SpeechDataset, one_hot, vocab
 
 #Bejan imported
 import random
 import numpy as np
 
-def get_nll(data_gen, model):
+def get_nll(data_gen, model, vocab):
     ll = []
     for v in data_gen:
-        ll.append(float((model.predict_all(v)[:,:-1] * one_hot(v)).sum()/len(v)))
+        in_string = [vocab[i] for i in v.argmax(dim=0)]
+        in_string = ''.join(in_string)
+#        print(model.predict_all(in_string))
+        ll.append(float((model.predict_all(in_string)[:,:-1] * one_hot(in_string)).sum()/len(v)))
     return -np.mean(ll)
 
 def train(args):
@@ -49,7 +52,7 @@ def train(args):
         print('Epoch',e)
         random.shuffle(data_ind)
         n_batches = len(data_ind) // batch_size
-        for b in range(n_batches):
+        for b in [0]:#range(n_batches):
             train_ind = data_ind[b * batch_size : (b+1) * batch_size]
             batch = []
             for i in train_ind:
@@ -69,12 +72,12 @@ def train(args):
             
             global_step += 1
             
-        nll = get_nll(train_gen, model)
+        nll = get_nll(train_gen, model, vocab)
         if train_logger:
             train_logger.add_scalar('nll', nll, global_step = e)
         
         print('validate')
-        nll = get_nll(valid_gen, model)
+        nll = get_nll(valid_gen, model, vocab)
         if valid_logger:
             valid_logger.add_scalar('nll', nll, global_step = e)
     save_model(model)
