@@ -100,8 +100,8 @@ class TCN(torch.nn.Module, LanguageModel):
         use torch.nn.Parameter to explicitly create it.
         """
         super().__init__()
-        
-        self.init_prob = torch.nn.Parameter(torch.ones(len(char_set))) / len(char_set)
+        device  = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.init_prob = (torch.nn.Parameter(torch.ones(len(char_set))) / len(char_set)).to(device)
         self.char_set = char_set
         c = len(char_set)
         L = []
