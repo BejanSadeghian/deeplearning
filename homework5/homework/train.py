@@ -10,10 +10,11 @@ import numpy as np
 def get_nll(data_gen, model, vocab, device):
     ll = []
     for v in data_gen:
+        v.to(device)
         in_string = [vocab[i] for i in v.argmax(dim=0)]
         in_string = ''.join(in_string)
 #        print(model.predict_all(in_string))
-        ll.append(float((model.predict_all(in_string.to(device))[:,:-1] * one_hot(in_string)).sum()/len(v)))
+        ll.append(float((model.predict_all(in_string)[:,:-1] * one_hot(in_string)).sum()/len(v)))
     return -np.mean(ll)
 
 def train(args):
