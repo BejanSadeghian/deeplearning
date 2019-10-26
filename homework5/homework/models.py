@@ -40,6 +40,7 @@ class Bigram(LanguageModel):
         self.first, self.transition = torch.load(path.join(path.dirname(path.abspath(__file__)), 'bigram.th'))
 
     def predict_all(self, some_text):
+        print(some_text)
         return torch.cat((self.first[:, None], self.transition.t().matmul(utils.one_hot(some_text))), dim=1)
 
 
@@ -139,24 +140,21 @@ class TCN(torch.nn.Module, LanguageModel):
         """
         vocab = self.char_set
         
-        try:
-            if len(some_text) == 0:
-                dist = Categorical(self.init_prob)
-                new_char = vocab[dist.sample().item()]
-                some_text += new_char
-                x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
-                prob = x[:,:]
-                return(torch.nn.functional.log_softmax(prob,dim=0))
-            else:
-                x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
-                x = x[None,:,:]
-                prob = self.forward(x)
-                #print(prob)
-                prob = prob.squeeze()
-                return(torch.nn.functional.log_softmax(prob,dim=0))
-        except Exception as e:
-            print(len(some_text))
-            print(e)
+        if len(some_text) == 0:
+            dist = Categorical(self.init_prob)
+            new_char = vocab[dist.sample().item()]
+            some_text += new_char
+            x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
+            prob = x[:,:]
+            return(torch.nn.functional.log_softmax(prob,dim=0))
+        else:
+            x = torch.tensor(np.array(list(some_text))[None,:] == np.array(list(vocab))[:,None]).float()
+            x = x[None,:,:]
+            prob = self.forward(x)
+            #print(prob)
+            prob = prob.squeeze()
+            return(torch.nn.functional.log_softmax(prob,dim=0))
+       
 
 
 
