@@ -5,6 +5,13 @@ from .utils import SpeechDataset, one_hot
 
 #Bejan imported
 import random
+import numpy as np
+
+def get_nll(data_gen, model):
+    ll = []
+    for v in data_gen:
+        ll.append(float((model.predict_all(v)[:,:-1] * one_hot(v)).sum()/len(v)))
+    return -np.mean(ll)
 
 def train(args):
     from os import path
@@ -60,14 +67,16 @@ def train(args):
             l.backward(retain_graph=True)
             optimizer.step()
             
-            
             global_step += 1
-        print('validate')
-        ll = []
-        for v in valid_gen:
-            ll.append(float((model.predict_all(v)[:,:,:-1] * one_hot(v))/len(v)))
-        
             
+        nll = get_nll(train_gen, model)
+        if train_logger:
+            train_logger.add_scalar('nll', nll, global_step = e)
+        
+        print('validate')
+        nll = get_nll(valid_gen, model)
+        if valid_logger:
+            valid_logger.add_scalar('nll', nll, global_step = e)
     save_model(model)
 
 
