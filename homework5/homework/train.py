@@ -12,8 +12,7 @@ def get_nll(data_gen, model, vocab, device):
     for v in data_gen:
         in_string = [vocab[i] for i in v.argmax(dim=0)]
         in_string = ''.join(in_string)
-#        print(model.predict_all(in_string))
-        ll.append(float((model.predict_all(in_string)[:,:-1] * one_hot(in_string)).sum()/len(v)))
+        ll.append(float((model.predict_all(in_string)[:,:-1] * one_hot(in_string).to(device)).sum()/len(v)))
     return -np.mean(ll)
 
 def train(args):
@@ -76,12 +75,12 @@ def train(args):
         nll = get_nll(train_gen, model, vocab, device)
         if train_logger:
             print('adding NLL')
-            train_logger.add_scalar('nll', nll, global_step = e)
+            train_logger.add_scalar('nll', nll.cpu(), global_step = e)
         
         print('validate')
         nll = get_nll(valid_gen, model, vocab, device)
         if valid_logger:
-            valid_logger.add_scalar('nll', nll, global_step = e)
+            valid_logger.add_scalar('nll', nll.cpu(), global_step = e)
     save_model(model)
 
 
