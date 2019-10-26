@@ -7,19 +7,20 @@ from .utils import SpeechDataset, one_hot, vocab
 import random
 import numpy as np
 
-def get_nll(data_gen, model, vocab):
+def get_nll(data_gen, model, vocab, device):
     ll = []
     for v in data_gen:
         in_string = [vocab[i] for i in v.argmax(dim=0)]
         in_string = ''.join(in_string)
 #        print(model.predict_all(in_string))
-        ll.append(float((model.predict_all(in_string)[:,:-1] * one_hot(in_string)).sum()/len(v)))
+        ll.append(float((model.predict_all(in_string.to(device))[:,:-1] * one_hot(in_string)).sum()/len(v)))
     return -np.mean(ll)
 
 def train(args):
     from os import path
     import torch.utils.tensorboard as tb
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    print(device)
     model = TCN().to(device)
     train_logger, valid_logger = None, None
     if args.log_dir is not None:
@@ -72,13 +73,13 @@ def train(args):
             
             global_step += 1
             
-        nll = get_nll(train_gen, model, vocab)
+        nll = get_nll(train_gen, model, vocab, device)
         if train_logger:
             print('adding NLL')
             train_logger.add_scalar('nll', nll, global_step = e)
         
         print('validate')
-        nll = get_nll(valid_gen, model, vocab)
+        nll = get_nll(valid_gen, model, vocab, device)
         if valid_logger:
             valid_logger.add_scalar('nll', nll, global_step = e)
     save_model(model)
