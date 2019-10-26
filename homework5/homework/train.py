@@ -75,12 +75,12 @@ def train(args):
         nll = get_nll(train_gen, model, vocab, device)
         if train_logger:
             print('adding NLL')
-            train_logger.add_scalar('nll', nll.cpu(), global_step = e)
+            train_logger.add_scalar('nll', nll, global_step = e)
         
         print('validate')
         nll = get_nll(valid_gen, model, vocab, device)
         if valid_logger:
-            valid_logger.add_scalar('nll', nll.cpu(), global_step = e)
+            valid_logger.add_scalar('nll', nll, global_step = e)
     save_model(model)
 
 
