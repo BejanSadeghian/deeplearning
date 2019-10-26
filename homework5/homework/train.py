@@ -49,14 +49,17 @@ def train(args):
                 batch.append(train_gen[i])
             batch = torch.stack(batch, dim=0).to(device)
             train_data = batch[:,:,:-1]
-            train_label = batch[:,:,1:].argmax(dim=1)
+            train_label = batch[:,:,:].argmax(dim=1)
+            
             o = model(train_data)
             l = loss(o, train_label)
+            if train_logger:
+                train_logger.add_scalar('Loss', l, global_step = global_step)
+                
             optimizer.zero_grad()
-            l.backward()
+            l.backward(retain_graph=True)
             optimizer.step()
             
-            train_logger.add_scalar('Loss', l, global_step = global_step)
             
             global_step += 1
         print('validate')
