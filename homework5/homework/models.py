@@ -91,7 +91,7 @@ class TCN(torch.nn.Module, LanguageModel):
                 identity = self.downsample(identity)
             return self.network(x) + identity
 
-    def __init__(self, layers=[32,32,32], char_set=utils.vocab):
+    def __init__(self, layers=[32,32,32,32,32,32], char_set=utils.vocab):
         """
         Your code here
 
@@ -100,8 +100,8 @@ class TCN(torch.nn.Module, LanguageModel):
         use torch.nn.Parameter to explicitly create it.
         """
         super().__init__()
-        device  = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        self.init_prob = (torch.nn.Parameter(torch.ones(len(char_set))) / len(char_set)).to(device)
+#        device  = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.init_prob = torch.nn.Parameter(torch.ones(len(char_set))) # / len(char_set))#.to(device)
         self.char_set = char_set
         c = len(char_set)
         L = []
@@ -122,6 +122,7 @@ class TCN(torch.nn.Module, LanguageModel):
         @x: torch.Tensor((B, vocab_size, L)) a batch of one-hot encodings
         @return torch.Tensor((B, vocab_size, L+1)) a batch of log-likelihoods or logits
         """
+        
         B, S, L = x.shape
         if L == 0:
             init = self.init_prob.repeat(B).view(-1, len(self.char_set), 1)
@@ -141,7 +142,7 @@ class TCN(torch.nn.Module, LanguageModel):
         @return torch.Tensor((vocab_size, len(some_text)+1)) of log-likelihoods (not logits!)
         """
         vocab = self.char_set
-        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        device = torch.device('cuda') if next(self.parameters()).is_cuda else torch.device('cpu')
         if len(some_text) == 0:            
             prob = self.init_prob.view(len(vocab),1) 
             return(torch.nn.functional.log_softmax(prob,dim=0))
