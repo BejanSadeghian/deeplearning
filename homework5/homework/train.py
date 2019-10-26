@@ -52,7 +52,7 @@ def train(args):
         print('Epoch',e)
         random.shuffle(data_ind)
         n_batches = len(data_ind) // batch_size
-        for b in [0]:#range(n_batches):
+        for b in range(n_batches):
             train_ind = data_ind[b * batch_size : (b+1) * batch_size]
             batch = []
             for i in train_ind:
@@ -74,6 +74,7 @@ def train(args):
             
         nll = get_nll(train_gen, model, vocab)
         if train_logger:
+            print('adding NLL')
             train_logger.add_scalar('nll', nll, global_step = e)
         
         print('validate')
