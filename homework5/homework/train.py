@@ -82,7 +82,7 @@ def train(args):
             nll = get_nll(valid_gen, model, vocab, device)
             if valid_logger:
                 valid_logger.add_scalar('nll', nll, global_step = e)
-    save_model(model)
+        save_model(model)
 
 
 if __name__ == '__main__':
