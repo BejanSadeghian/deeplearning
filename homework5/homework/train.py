@@ -74,7 +74,7 @@ def train(args):
             global_step += 1
         
         model.eval()
-        if e % 10 == 0:
+        if e % 25 == 0:
             nll = get_nll(train_gen, model, vocab, device)
             if train_logger:
                 print('adding NLL')
