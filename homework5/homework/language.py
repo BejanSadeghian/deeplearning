@@ -118,6 +118,7 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
         for t in track:
             e = t[0] #the string
             print(e)
+            print(len(track))
             if e[-1] == '.':
                 continue
                 period_counter += 1
