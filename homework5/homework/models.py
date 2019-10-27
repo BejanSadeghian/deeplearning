@@ -91,7 +91,7 @@ class TCN(torch.nn.Module, LanguageModel):
                 identity = self.downsample(identity)
             return self.network(x) + identity
 
-    def __init__(self, layers=[32,32,32,32,32,32,32,32,32], char_set=utils.vocab):
+    def __init__(self, layers=[32,32,32,32,32,32,64,64,64], char_set=utils.vocab):
         """
         Your code here
 
