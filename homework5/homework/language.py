@@ -102,9 +102,6 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
     beam_size = n_results
     def get_next_letters(string, beam_size, model, vocab):
         next_prob = model.predict_all(string)[:,-1]
-        print(next_prob)
-        print(list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0])
-        input('')
         return list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0], next_prob
     
     vocab = string.ascii_lowercase + ' .'    
@@ -120,8 +117,7 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
         period_counter = 0
         for t in track:
             e = t[0] #the string
-            print(e, len(e))
-            print(len(track))
+            print(e)
             if e[-1] == '.':
                 continue
                 period_counter += 1
