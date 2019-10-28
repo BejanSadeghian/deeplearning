@@ -103,6 +103,7 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
     def get_next_letters(string, beam_size, model, vocab):
         next_prob = model.predict_all(string)[:,-1]
         print(next_prob)
+        print(list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0])
         input('')
         return list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0], next_prob
     
