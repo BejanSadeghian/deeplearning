@@ -68,16 +68,17 @@ class Planner(torch.nn.Module):
         Your code here
         """
         self.image_size = image_size
-        self.conv = torch.nn.ModuleList()
+        self.conv = 
         c = 3        
-        self.network = []
+        self.network = torch.nn.ModuleList()
         for l in layers:
             kernel_size = 7 if c == 3 else 3
             stride = 1 if c == 3 else 2
             self.network.append(self.conv_block(c, l, stride, kernel_size, 1))
             c = l
         
-        self.upnetwork = [self.upconv_block(c, layers[-2])]
+        self.upnetwork = torch.nn.ModuleList()
+        self.upnetwork.append(self.upconv_block(c, layers[-2]))
         c = layers[-2]
         for l in reversed(layers[:-2]):
             self.upnetwork.append(self.upconv_block(c * 2, l, 2, 3, 1)) # x2 input because of skip
