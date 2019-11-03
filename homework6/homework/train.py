@@ -79,6 +79,7 @@ def train(args):
             valid_error.append(error)
             batch_data.to('cpu')
             batch_label.to('cpu')
+            print(torch.cuda.memory_allocated())
             torch.cuda.empty_cache()
             
         rmse = torch.cat(valid_error).mean().sqrt()
