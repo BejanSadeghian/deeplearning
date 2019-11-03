@@ -61,6 +61,7 @@ def train(args):
             batch_data.to('cpu')
             batch_label.to('cpu')
             global_step += 1
+            torch.cuda.empty_cache()
         rmse = torch.cat(train_error).mean().sqrt()
         train_logger.add_scalar('RMSE', rmse, global_step = epoch)
         
@@ -76,6 +77,7 @@ def train(args):
             valid_error.append(error)
             batch_data.to('cpu')
             batch_label.to('cpu')
+            torch.cuda.empty_cache()
             
         rmse = torch.cat(valid_error).mean().sqrt()
         valid_logger.add_scalar('RMSE', rmse, global_step = epoch)
