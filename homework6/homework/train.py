@@ -31,7 +31,7 @@ def train(args):
 #    valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor()]) 
     
     train_data = load_data(args.train_path, batch_size=args.batch_size)#, transform=transformer)
-    valid_data = load_data(args.train_path, batch_size=args.batch_size)
+    valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
     loss = torch.nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
