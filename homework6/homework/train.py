@@ -7,6 +7,7 @@ from . import dense_transforms
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device('cpu')
     
     from os import path
     model = Planner().to(device)
@@ -62,6 +63,8 @@ def train(args):
             batch_data = batch[0].to(device)
             batch_label = batch[1].to(device)
             
+            pred = model(batch_data)
+            
             error = ((pred - batch_label)**2) #For RMSE
             valid_error.append(error)
             
@@ -89,6 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('-rot', '--data_rotate', type=bool, default=False)
     parser.add_argument('-flip', '--data_flip', type=bool, default=False)
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
+    parser.add_argument('-la', '--layers', type=list, default=[32,32,64,64])
 
     args = parser.parse_args()
     train(args)
