@@ -69,18 +69,19 @@ def train(args):
         valid_error = []
         model.eval()
         print('eval')
-        for batch in valid_data:
-            batch_data = batch[0].to(device)
-            batch_label = batch[1].to(device)
-            
-            pred = model(batch_data)
-            
-            error = ((pred - batch_label)**2).cpu() #For RMSE
-            valid_error.append(error)
-            batch_data.to('cpu')
-            batch_label.to('cpu')
-            print(torch.cuda.memory_allocated())
-            torch.cuda.empty_cache()
+        with torch.no_grad():
+            for batch in valid_data:
+                batch_data = batch[0].to(device)
+                batch_label = batch[1].to(device)
+                
+                pred = model(batch_data)
+                
+                error = ((pred - batch_label)**2).cpu() #For RMSE
+                valid_error.append(error)
+                batch_data.to('cpu')
+                batch_label.to('cpu')
+                print(torch.cuda.memory_allocated())
+                torch.cuda.empty_cache()
             
         rmse = torch.cat(valid_error).mean().sqrt()
         valid_logger.add_scalar('RMSE', rmse, global_step = epoch)
