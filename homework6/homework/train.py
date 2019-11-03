@@ -49,7 +49,7 @@ def train(args):
             pred = model(batch_data)
             
             optimizer.zero_grad()
-            l = loss(pred, batch_label)
+            l = loss(pred.cpu(), batch_label.cpu())
             l.backward()
             optimizer.step()
             
