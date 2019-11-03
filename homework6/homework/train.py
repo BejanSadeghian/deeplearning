@@ -9,8 +9,12 @@ def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print(device)
     
+    if device == 'cuda' and args.clear_cache:
+        torch.cuda.empty_cache()
+    
     from os import path
     model = Planner().to(device)
+    
     train_logger, valid_logger = None, None
 
     if args.log_dir is not None:
@@ -84,11 +88,11 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--train_path', type=str)
     parser.add_argument('-v', '--valid_path', type=str)
     parser.add_argument('-ep', '--epochs', type=int, default=500)
-    parser.add_argument('-b', '--batch_size', type=int, default=256)
+    parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
     parser.add_argument('-mom', '--momentum', type=float, default=0.9)
     parser.add_argument('-ls', '--log_suffix', type=str, default='')
-    parser.add_argument('-cl','--clear_cache', type=bool, default=False)
+    parser.add_argument('-cl','--clear_cache', type=bool, default=True)
     parser.add_argument('-rot', '--data_rotate', type=bool, default=False)
     parser.add_argument('-flip', '--data_flip', type=bool, default=False)
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
