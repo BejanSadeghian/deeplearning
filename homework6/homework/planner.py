@@ -109,7 +109,11 @@ class Planner(torch.nn.Module):
         output = spatial_argmax(heatmap)
         
         #Resize to image size
-        img_size = torch.tensor(self.image_size, dtype=torch.float)
+        if output.is_cuda:
+            device = 'cuda'
+        else:
+            device = 'cpu'
+        img_size = torch.tensor(self.image_size, dtype=torch.float, device=device)
         output = output * img_size
         return output
         
