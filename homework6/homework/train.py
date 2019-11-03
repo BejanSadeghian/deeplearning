@@ -61,12 +61,14 @@ def train(args):
             batch_data.to('cpu')
             batch_label.to('cpu')
             global_step += 1
+            print(torch.cuda.memory_allocated())
             torch.cuda.empty_cache()
         rmse = torch.cat(train_error).mean().sqrt()
         train_logger.add_scalar('RMSE', rmse, global_step = epoch)
         
         valid_error = []
         model.eval()
+        print('eval')
         for batch in valid_data:
             batch_data = batch[0].to(device)
             batch_label = batch[1].to(device)
