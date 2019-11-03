@@ -68,6 +68,7 @@ class Planner(torch.nn.Module):
         Your code here
         """
         self.image_size = image_size
+        self.conv = torch.nn.ModuleList()
         c = 3        
         self.network = []
         for l in layers:

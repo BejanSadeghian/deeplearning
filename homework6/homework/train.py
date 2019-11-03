@@ -7,6 +7,7 @@ from . import dense_transforms
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    print(device)
     
     from os import path
     model = Planner().to(device)
