@@ -53,10 +53,13 @@ def train(args):
             l.backward()
             optimizer.step()
             
-            error = ((pred - batch_label)**2) #For RMSE
+            error = ((pred - batch_label)**2).cpu() #For RMSE
             train_error.append(error)
             
             train_logger.add_scalar('loss', l, global_step = global_step)
+            
+            batch_data.to('cpu')
+            batch_label.to('cpu')
             global_step += 1
         rmse = torch.cat(train_error).mean().sqrt()
         train_logger.add_scalar('RMSE', rmse, global_step = epoch)
@@ -69,8 +72,10 @@ def train(args):
             
             pred = model(batch_data)
             
-            error = ((pred - batch_label)**2) #For RMSE
+            error = ((pred - batch_label)**2).cpu() #For RMSE
             valid_error.append(error)
+            batch_data.to('cpu')
+            batch_label.to('cpu')
             
         rmse = torch.cat(valid_error).mean().sqrt()
         valid_logger.add_scalar('RMSE', rmse, global_step = epoch)
