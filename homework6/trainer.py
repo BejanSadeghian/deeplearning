@@ -59,6 +59,10 @@ if __name__ == '__main__':
         print(hyper_opt)
 
         arguments = []
+        arguments.append('--model_label')
+        arguments.append('Run'+str(hyper_opt))
+        arguments.append('--log_suffix')
+        arguments.append('Run'+str(hyper_opt))
         for i, label in enumerate(order):
             arguments.append(label)
             if label == '--layers':

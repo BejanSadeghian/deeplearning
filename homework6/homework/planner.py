@@ -61,7 +61,7 @@ class Planner(torch.nn.Module):
         def forward(self, x, output_pad=False):
             return F.relu(self.upsample(x))
             
-    def __init__(self, layers=[32,32,64,128], image_size=(96,128)):
+    def __init__(self, layers=[32,32,64,64,128], image_size=(96,128)):
         super().__init__()
 
         """
@@ -105,7 +105,8 @@ class Planner(torch.nn.Module):
             x = torch.cat([z[:,:, :activations[-2-i].size(2), :activations[-2-i].size(3)], activations[-2-i]], dim=1)
             z = layer(x)
         heatmap = F.sigmoid(self.classifier(z))
-        heatmap = heatmap.squeeze()
+        heatmap = heatmap.squeeze(1)
+        
         output = spatial_argmax(heatmap)
         # print(output)
         #Resize to image size
