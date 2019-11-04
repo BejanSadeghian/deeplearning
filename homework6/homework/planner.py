@@ -119,20 +119,32 @@ class Planner(torch.nn.Module):
         
 
 
-def save_model(model):
+def save_model(model, label=None):
     from torch import save
     from os import path
     if isinstance(model, Planner):
-        return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), 'planner.th'))
+        if label is None:
+            return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), 'planner.th'))
+        else:
+            return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), 'planner{}.th'.format(label)))
     raise ValueError("model type '%s' not supported!" % str(type(model)))
 
-
-def load_model():
+def load_model(label=None):
     from torch import load
     from os import path
     r = Planner()
-    r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'planner.th'), map_location='cpu'))
+    if label is None:
+        r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'planner.th'), map_location='cpu'))
+    else:
+        r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'planner{}.th'.format(label)), map_location='cpu'))
     return r
+
+# def load_model():
+#     from torch import load
+#     from os import path
+#     r = Planner()
+#     r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'planner.th'), map_location='cpu'))
+#     return r
 
 
 if __name__ == '__main__':

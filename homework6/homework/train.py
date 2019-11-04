@@ -6,6 +6,7 @@ from .utils import load_data
 from . import dense_transforms
 
 def train(args):
+    print(args)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print(device)
     
@@ -13,7 +14,9 @@ def train(args):
         torch.cuda.empty_cache()
     
     from os import path
-    model = Planner().to(device)
+    if type(args.layers) is str:
+        layers = eval(args.layers)
+    model = Planner(layers=layers).to(device)
     
     train_logger, valid_logger = None, None
 
@@ -86,7 +89,7 @@ def train(args):
         rmse = torch.cat(valid_error).mean().sqrt()
         valid_logger.add_scalar('RMSE', rmse, global_step = epoch)
 
-        save_model(model)
+        save_model(model, args.model_label)
 
 
 if __name__ == '__main__':
@@ -107,7 +110,7 @@ if __name__ == '__main__':
     parser.add_argument('-rot', '--data_rotate', type=bool, default=False)
     parser.add_argument('-flip', '--data_flip', type=bool, default=False)
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
-    parser.add_argument('-la', '--layers', type=list, default=[32,32,64,64])
-
+    parser.add_argument('-la', '--layers', type=str, nargs='+', default=[32,32,64,64])
+    parser.add_argument('-ml', '--model_label', type=str)
     args = parser.parse_args()
     train(args)
