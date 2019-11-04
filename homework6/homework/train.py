@@ -58,7 +58,7 @@ def train(args):
             
             optimizer.zero_grad()
             l = loss(pred.cpu(), batch_label.cpu())
-            print(l)
+            # print(l)
             l.backward()
             optimizer.step()
             
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--valid_path', type=str)
     parser.add_argument('-ep', '--epochs', type=int, default=500)
     parser.add_argument('-b', '--batch_size', type=int, default=32)
-    parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
+    parser.add_argument('-lr', '--learning_rate', type=float, default=0.001)
     parser.add_argument('-mom', '--momentum', type=float, default=0.9)
     parser.add_argument('-ls', '--log_suffix', type=str, default='')
     parser.add_argument('-cl','--clear_cache', type=bool, default=True)
