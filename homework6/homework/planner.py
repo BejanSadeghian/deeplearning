@@ -113,8 +113,8 @@ class Planner(torch.nn.Module):
             device = 'cuda'
         else:
             device = 'cpu'
-        img_size = torch.tensor(self.image_size, dtype=torch.float, device=device) / 2.0
-        output = output * img_size
+        img_size = torch.tensor(self.image_size, dtype=torch.float, device=device)
+        output = ((output / 2.0) + 0.5) * img_size
         return output
         
 
