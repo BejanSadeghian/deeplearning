@@ -55,6 +55,7 @@ def train(args):
             
             optimizer.zero_grad()
             l = loss(pred.cpu(), batch_label.cpu())
+            print(l)
             l.backward()
             optimizer.step()
             
@@ -112,7 +113,8 @@ if __name__ == '__main__':
     parser.add_argument('-rot', '--data_rotate', type=bool, default=False)
     parser.add_argument('-flip', '--data_flip', type=bool, default=False)
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
-    parser.add_argument('-la', '--layers', type=str, nargs='+', default=[32,32,64,64])
+    parser.add_argument('-la', '--layers', type=str)
     parser.add_argument('-ml', '--model_label', type=str)
+
     args = parser.parse_args()
     train(args)
