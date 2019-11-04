@@ -33,9 +33,9 @@ if __name__ == '__main__':
     hyper_params = {
         '--layers':[[32,32,64], [32,32,64,128], [32,32,64,64,128], [32,32,64,64,128,128]],
         '--learning_rate':['0.01', '1e-3'],
-        '--data_rotate':['False', 'True'],
-        '--data_flip':['False', 'True'],
-        '--data_colorjitter':['False', 'True']
+        # '--data_rotate':['False', 'True'],
+        # '--data_flip':['False', 'True'],
+        # '--data_colorjitter':['False', 'True']
         }
 
     static = {
@@ -56,9 +56,11 @@ if __name__ == '__main__':
     product = list(itertools.product(*L))
 
     for hyper_opt in product:
-        print(hyper_opt)
-
         arguments = []
+        arguments.append('--log_dir')
+        arguments.append('log')
+        arguments.append('--batch_size')
+        arguments.append('32')
         arguments.append('--model_label')
         arguments.append('Run'+str(hyper_opt))
         arguments.append('--log_suffix')
@@ -70,8 +72,10 @@ if __name__ == '__main__':
                 arguments.append(str(hyper_opt[i]))
             else:
                 arguments.append(hyper_opt[i])
-        print(arguments)
         args = parser.parse_args(arguments)
         print(args)
-        train(args)
+        try:
+            train(args)
+        except Exception as e:
+            print(e,args)
     
