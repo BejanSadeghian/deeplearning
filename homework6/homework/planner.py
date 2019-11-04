@@ -107,7 +107,7 @@ class Planner(torch.nn.Module):
         heatmap = F.sigmoid(self.classifier(z))
         heatmap = heatmap.squeeze()
         output = spatial_argmax(heatmap)
-        
+        print(output)
         #Resize to image size
         if output.is_cuda:
             device = 'cuda'
