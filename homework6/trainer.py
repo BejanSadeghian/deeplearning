@@ -61,8 +61,8 @@ if __name__ == '__main__':
         arguments.append('log')
         arguments.append('--batch_size')
         arguments.append('32')
-        arguments.append('--model_label')
-        arguments.append('Run'+str(hyper_opt))
+        # arguments.append('--model_label')
+        # arguments.append('Run'+str(hyper_opt))
         arguments.append('--log_suffix')
         arguments.append('Run'+str(hyper_opt))
         for i, label in enumerate(order):
