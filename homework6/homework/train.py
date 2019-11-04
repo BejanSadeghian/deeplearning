@@ -14,10 +14,10 @@ def train(args):
         torch.cuda.empty_cache()
     
     from os import path
-    if type(args.layers) is str:
-        layers = eval(args.layers)
-    else:
-        layers = args.layers
+    # if type(args.layers) is str:
+    #     layers = eval(args.layers)
+    # else:
+    layers = eval(args.layers)
     model = Planner(layers=layers).to(device)
     
     train_logger, valid_logger = None, None

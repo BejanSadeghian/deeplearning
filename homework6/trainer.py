@@ -24,14 +24,14 @@ parser.add_argument('-cl','--clear_cache', type=bool, default=True)
 parser.add_argument('-rot', '--data_rotate', type=bool, default=False)
 parser.add_argument('-flip', '--data_flip', type=bool, default=False)
 parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
-parser.add_argument('-la', '--layers', type=str, default=[32,32,64,64])
+parser.add_argument('-la', '--layers', type=str)
 parser.add_argument('-ml', '--model_label', type=str)
 
 if __name__ == '__main__':
     import itertools
 
     hyper_params = {
-        '--layers':['[32,32,64]',[32,32,64,128], [32,32,64,64,128], [32,32,64,64,128,128]],
+        '--layers':[[32,32,64], [32,32,64,128], [32,32,64,64,128], [32,32,64,64,128,128]],
         '--learning_rate':['0.01', '1e-3'],
         '--data_rotate':['False', 'True'],
         '--data_flip':['False', 'True'],
@@ -61,7 +61,11 @@ if __name__ == '__main__':
         arguments = []
         for i, label in enumerate(order):
             arguments.append(label)
-            arguments.append(hyper_opt[i])
+            if label == '--layers':
+                # for x in hyper_opt[i]:
+                arguments.append(str(hyper_opt[i]))
+            else:
+                arguments.append(hyper_opt[i])
         print(arguments)
         args = parser.parse_args(arguments)
         print(args)
