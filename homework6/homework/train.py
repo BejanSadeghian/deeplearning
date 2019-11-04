@@ -17,7 +17,10 @@ def train(args):
     # if type(args.layers) is str:
     #     layers = eval(args.layers)
     # else:
-    layers = eval(args.layers)
+    try:
+        layers = eval(args.layers)
+    except:
+        layers = eval(args.layers[0])
     model = Planner(layers=layers).to(device)
     
     train_logger, valid_logger = None, None
