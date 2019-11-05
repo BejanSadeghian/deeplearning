@@ -67,6 +67,9 @@ class Planner(torch.nn.Module):
         """
         Your code here
         """
+        self.input_mean = torch.Tensor([0.3521554, 0.30068502, 0.28527516])
+        self.input_std = torch.Tensor([0.18182722, 0.18656468, 0.15938024])
+
         self.image_size = image_size
         c = 3        
         self.network = torch.nn.ModuleList()
@@ -94,7 +97,9 @@ class Planner(torch.nn.Module):
         """
         
         ##Add preprocessing
-        x = img
+
+        x = (img - self.input_mean[None, :, None, None].to(img.device)) / self.input_std[None, :, None, None].to(img.device)
+        # x = img
         activations = []
         for i, layer in enumerate(self.network):
             z = layer(x)
