@@ -1,9 +1,23 @@
 from .planner import Planner, save_model 
 import torch
 import torch.utils.tensorboard as tb
+import torch.nn.functional as F
 import numpy as np
 from .utils import load_data
 from . import dense_transforms
+
+class PositionLoss(torch.nn.Module):
+    def __init__(self, image_size=(128.0,96.0)):
+        super().__init__()
+        self.image_size = image_size # W, H
+        self.center = torch.tensor(image_size, dtype=torch.float) / 2.0
+    
+    def forward(self, input, target):
+        ## input (w,h)
+        ## target (w,h)
+        weight = torch.stack((torch.abs(target[:,0] - self.center[0]),torch.ones(target.shape[0])), dim=1)
+        pl = (((input - target) * weight)**2).mean().sqrt()
+        return pl
 
 def train(args):
     print(args)
@@ -35,13 +49,14 @@ def train(args):
     Your code here, modify your HW4 code
     
     """
-   transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0.5), dense_transforms.ToTensor()])  #, dense_transforms.ColorJitter()
+    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0.5), dense_transforms.ToTensor()])  #, dense_transforms.ColorJitter()
 #    valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor()]) 
     
     train_data = load_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
     loss = torch.nn.MSELoss()
+    loss = PositionLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
     
     global_step = 0
@@ -58,7 +73,7 @@ def train(args):
             
             optimizer.zero_grad()
             l = loss(pred.cpu(), batch_label.cpu())
-            # print(l)
+            print(l)
             l.backward()
             optimizer.step()
             
@@ -116,7 +131,7 @@ if __name__ == '__main__':
     parser.add_argument('-rot', '--data_rotate', type=bool, default=False)
     parser.add_argument('-flip', '--data_flip', type=bool, default=False)
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
-    parser.add_argument('-la', '--layers', type=str)
+    parser.add_argument('-la', '--layers', type=str, default='[32,32,64]')
     parser.add_argument('-ml', '--model_label', type=str)
 
     args = parser.parse_args()
