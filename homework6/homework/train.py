@@ -73,7 +73,7 @@ def train(args):
             
             optimizer.zero_grad()
             l = loss(pred.cpu(), batch_label.cpu())
-            print(l)
+            # print(l)
             l.backward()
             optimizer.step()
             
