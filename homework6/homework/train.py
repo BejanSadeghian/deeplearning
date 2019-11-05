@@ -16,7 +16,7 @@ class PositionLoss(torch.nn.Module):
         ## input (w,h)
         ## target (w,h)
         weight = torch.stack((torch.abs(target[:,0] - self.center[0]),torch.ones(target.shape[0])), dim=1)
-        pl = (((input - target) * weight)**2).mean().sqrt()
+        pl = (((input - target)**2) * weight).mean().sqrt()
         return pl
 
 def train(args):
