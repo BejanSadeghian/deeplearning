@@ -35,7 +35,7 @@ def train(args):
     Your code here, modify your HW4 code
     
     """
-#    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0.5), dense_transforms.ColorJitter() dense_transforms.ToTensor()])  #, dense_transforms.ColorJitter()
+#    transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0.5), dense_transforms.ColorJitter(), dense_transforms.ToTensor()])  #, dense_transforms.ColorJitter()
 #    valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor()]) 
     
     train_data = load_data(args.train_path, batch_size=args.batch_size)#, transform=transformer)
