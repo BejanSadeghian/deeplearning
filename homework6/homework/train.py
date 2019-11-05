@@ -56,7 +56,7 @@ def train(args):
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
     loss = torch.nn.MSELoss()
-    loss = PositionLoss()
+    # loss = PositionLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
     
     global_step = 0
