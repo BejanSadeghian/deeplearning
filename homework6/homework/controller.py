@@ -18,7 +18,7 @@ def control(aim_point, current_vel):
     Hint: You may want to use action.drift=True for wide turns (it will turn faster)
     """
     
-    terminal_vel = 20
+    terminal_vel = 15
     # print(aim_point)
     steer_angle = np.clip(aim_point[0], -1, 1) #np.arcsin(aim_point[0] / aim_point[2]) * aim_point[0]
     if np.abs(aim_point[0]) > 7 and current_vel > 10:
