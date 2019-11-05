@@ -115,9 +115,9 @@ class Planner(torch.nn.Module):
         else:
             device = 'cpu'
         img_size = torch.tensor(list(reversed(self.image_size)), dtype=torch.float, device=device)
-        print(output)
+        # print(output)
         output = ((output / 2.0) + 0.5) * img_size
-        print(output, img_size)
+        # print(output, img_size)
         return output
         
 
