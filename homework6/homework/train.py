@@ -8,7 +8,7 @@ from . import dense_transforms
 
 class PositionLoss(torch.nn.Module):
     def __init__(self, image_size=(128.0,96.0)):
-        super().__init__()
+        super(PositionLoss, self).__init__()
         self.image_size = image_size # W, H
         self.center = torch.tensor(image_size, dtype=torch.float) / 2.0
     
@@ -16,9 +16,9 @@ class PositionLoss(torch.nn.Module):
         ## input (w,h)
         ## target (w,h)
         weight = torch.stack((torch.abs(target[:,0] - self.center[0]),torch.ones(target.shape[0])), dim=1)
-        pl = (((input - target)**2) * weight).mean().sqrt()
+        pl = (((input - target)**2) * weight).mean()
         return pl
-
+            
 def train(args):
     print(args)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -55,8 +55,8 @@ def train(args):
     train_data = load_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
-    loss = torch.nn.MSELoss()
-    # loss = PositionLoss()
+    # loss = torch.nn.MSELoss()
+    pl_loss = PositionLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
     
     global_step = 0
@@ -72,10 +72,13 @@ def train(args):
             pred = model(batch_data)
             
             optimizer.zero_grad()
-            l = loss(pred.cpu(), batch_label.cpu())
-            # print(l)
+            # l = loss(pred.cpu(), batch_label.cpu())
+            l = pl_loss(pred.cpu(), batch_label.cpu())
             l.backward()
             optimizer.step()
+            # print(l)
+            # print(pl)
+            # print('---')
             
             error = ((pred - batch_label)**2).cpu() #For RMSE
             train_error.append(error)
