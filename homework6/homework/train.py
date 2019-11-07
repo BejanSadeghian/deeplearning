@@ -15,8 +15,8 @@ class PositionLoss(torch.nn.Module):
     def forward(self, input, target):
         ## input (w,h)
         ## target (w,h)
-        # weight = torch.stack((torch.ones(target.shape[0])*10,torch.ones(target.shape[0])), dim=1) #torch.abs(target[:,0] - self.center[0])
-        weight = torch.tensor([1,0.1], dtype=torch.float)
+        weight = torch.stack((torch.abs(target[:,0] - self.center[0]) / self.center[0],torch.ones(target.shape[0])/10), dim=1) 
+        # weight = torch.tensor([1,0.1], dtype=torch.float)
         pl = (((input - target)**2) * weight).mean()
         return pl
             

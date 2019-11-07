@@ -61,7 +61,7 @@ class Planner(torch.nn.Module):
         def forward(self, x, output_pad=False):
             return F.relu(self.upsample(x))
             
-    def __init__(self, layers=[32,32,64,64,128], image_size=(96,128)):
+    def __init__(self, layers=[32,32,64,64,128,128], image_size=(96,128)):
         super().__init__()
 
         """
