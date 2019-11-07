@@ -21,7 +21,7 @@ def control(aim_point, current_vel):
     terminal_vel = 20
     # print(aim_point)
     steer_angle = np.clip(aim_point[0], -1, 1) #np.arcsin(aim_point[0] / aim_point[2]) * aim_point[0]
-    if np.abs(aim_point[0]) > 7 and current_vel > 10:
+    if np.abs(aim_point[0]) > 7 and current_vel > 10 and np.sign(action.steer) == np.sign(steer_angle):
         action.acceleration = -1
         action.brake = True
         action.steer = action.steer + steer_angle
