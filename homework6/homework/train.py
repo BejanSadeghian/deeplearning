@@ -29,9 +29,6 @@ def train(args):
         torch.cuda.empty_cache()
     
     from os import path
-    # if type(args.layers) is str:
-    #     layers = eval(args.layers)
-    # else:
     try:
         layers = eval(args.layers)
     except:
@@ -51,14 +48,15 @@ def train(args):
     
     """
     transformer = dense_transforms.Compose([dense_transforms.RandomHorizontalFlip(0.5), dense_transforms.ToTensor()])  #, dense_transforms.ColorJitter()
-#    valid_transformer = dense_transforms.Compose([dense_transforms.ToTensor()]) 
     
     train_data = load_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
     # loss = torch.nn.MSELoss()
     pl_loss = PositionLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=50)
     
     global_step = 0
     
@@ -73,13 +71,9 @@ def train(args):
             pred = model(batch_data)
             
             optimizer.zero_grad()
-            # l = loss(pred.cpu(), batch_label.cpu())
             l = pl_loss(pred.cpu(), batch_label.cpu())
             l.backward()
             optimizer.step()
-            # print(l)
-            # print(pl)
-            # print('---')
             
             error = ((pred - batch_label)**2).cpu() #For RMSE
             train_error.append(error)
@@ -89,7 +83,6 @@ def train(args):
             batch_data.to('cpu')
             batch_label.to('cpu')
             global_step += 1
-            # print(torch.cuda.memory_allocated())
             torch.cuda.empty_cache()
         rmse = torch.cat(train_error).mean().sqrt()
         train_logger.add_scalar('RMSE', rmse, global_step = epoch)
@@ -108,12 +101,11 @@ def train(args):
                 valid_error.append(error)
                 batch_data.to('cpu')
                 batch_label.to('cpu')
-                # print(torch.cuda.memory_allocated())
                 torch.cuda.empty_cache()
             
         rmse = torch.cat(valid_error).mean().sqrt()
         valid_logger.add_scalar('RMSE', rmse, global_step = epoch)
-
+        # scheduler.step(rmse)
         save_model(model, args.model_label)
 
 
