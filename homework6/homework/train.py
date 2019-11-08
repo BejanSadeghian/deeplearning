@@ -52,11 +52,16 @@ def train(args):
     train_data = load_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
-    loss = torch.nn.MSELoss()
-    # loss = PositionLoss()
-    # optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=50)
+    if args.loss == 'MSE':
+        loss = torch.nn.MSELoss()
+    else:
+        loss = PositionLoss()
+    
+    if arg.optim == 'SGD':
+        optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=50)
     
     global_step = 0
     
@@ -105,7 +110,7 @@ def train(args):
             
         rmse = torch.cat(valid_error).mean().sqrt()
         valid_logger.add_scalar('RMSE', rmse, global_step = epoch)
-        # scheduler.step(rmse)
+        scheduler.step(rmse)
         save_model(model, args.model_label)
 
 
@@ -129,6 +134,8 @@ if __name__ == '__main__':
     parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
     parser.add_argument('-la', '--layers', type=str, default='[32,32,64]')
     parser.add_argument('-ml', '--model_label', type=str)
+    parser.add_argument('-lo', '--loss', type=str, default='MSE')
+    parser.add_argument('-op', '--optim', type=str, default='SGD')
 
     args = parser.parse_args()
     train(args)
