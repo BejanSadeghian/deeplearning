@@ -19,8 +19,8 @@ if __name__ == '__main__':
         train_size = int(len(ids) * pct)
         train_ids = np.random.choice(ids, size=train_size, replace=False)
         valid_ids = list(set(ids) - set(train_ids))
-#        os.mkdir('drive_data/train')
-#        os.mkdir('drive_data/valid')
+        # os.mkdir('drive_data/train2')
+        # os.mkdir('drive_data/valid2')
         for tr in train_ids:
             for ext in ['.csv', '.png']:
                 os.rename('drive_data/{}_{}{}'.format(t,tr,ext), 'drive_data/train/{}_{}{}'.format(t,tr,ext))
