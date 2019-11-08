@@ -39,7 +39,7 @@ def control(aim_point, current_vel):
         action.brake = False
         action.acceleration = 1
     elif current_vel > terminal_vel:
-        action.acceleration = -1
+        action.acceleration = 0
     action.steer = action.steer + steer_angle
         
 

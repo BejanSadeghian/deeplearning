@@ -52,8 +52,8 @@ def train(args):
     train_data = load_data(args.train_path, batch_size=args.batch_size, transform=transformer)
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
     
-    # loss = torch.nn.MSELoss()
-    pl_loss = PositionLoss()
+    loss = torch.nn.MSELoss()
+    # loss = PositionLoss()
     # optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=50)
@@ -71,7 +71,7 @@ def train(args):
             pred = model(batch_data)
             
             optimizer.zero_grad()
-            l = pl_loss(pred.cpu(), batch_label.cpu())
+            l = loss(pred.cpu(), batch_label.cpu())
             l.backward()
             optimizer.step()
             
