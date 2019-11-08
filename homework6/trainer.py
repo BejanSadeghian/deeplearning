@@ -31,16 +31,18 @@ if __name__ == '__main__':
     import itertools
 
     hyper_params = {
-        '--layers':[[16,32,64], [32,32,64,128], [32,32,64,64,128], [32,32,64,64,128,128], [16,16,32,32,64,64,128], [16,16,32,32,64,64,128,128]],
-        '--learning_rate':['1e-4', '1e-3'],
+        '--layers':[[32,32,64,64,128,128], [16,16,32,32,64,64,128], [16,16,32,32,64,64,128,128]],
+        '--learning_rate':['1e-4'],
+        '--loss':['MSE','PL']
+        '--optim':['SGD','ADAM']
         # '--data_rotate':['False', 'True'],
         # '--data_flip':['False', 'True'],
         # '--data_colorjitter':['False', 'True']
         }
 
     static = {
-        '--train_path':'drive_data/train',
-        '--valid_path':'drive_data/valid',
+        '--train_path':'drive_data/train_combined',
+        '--valid_path':'drive_data/valid_combined',
         '--epochs':'100'
         }
 
