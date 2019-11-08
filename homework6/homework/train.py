@@ -57,7 +57,7 @@ def train(args):
     else:
         loss = PositionLoss()
     
-    if arg.optim == 'SGD':
+    if args.optim == 'SGD':
         optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum = args.momentum)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
