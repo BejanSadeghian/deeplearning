@@ -33,8 +33,8 @@ if __name__ == '__main__':
     hyper_params = {
         '--layers':[[32,32,64,64,128,128], [16,16,32,32,64,64,128], [16,16,32,32,64,64,128,128]],
         '--learning_rate':['1e-4'],
-        '--loss':['MSE','PL']
-        '--optim':['SGD','ADAM']
+        '--loss':['MSE']
+        '--optim':['ADAM']
         # '--data_rotate':['False', 'True'],
         # '--data_flip':['False', 'True'],
         # '--data_colorjitter':['False', 'True']
