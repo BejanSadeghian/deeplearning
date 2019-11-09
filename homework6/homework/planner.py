@@ -34,7 +34,7 @@ def extract_peak(heatmap, max_pool_ks=7, min_score=0.4, max_det=100):
 class Planner(torch.nn.Module):
     
     class conv_block(torch.nn.Module):
-        def __init__(self, channel_in, channel_out, stride=2, kernel_size=3, dilation=1):
+        def __init__(self, channel_in, channel_out, stride=2, kernel_size=3, dilation=2):
             super().__init__()
             self.c1 = nn.Conv2d(channel_in, channel_out, kernel_size=kernel_size, dilation=dilation, stride=stride, padding=kernel_size//2)
             self.b1 = nn.BatchNorm2d(channel_out)
@@ -54,7 +54,7 @@ class Planner(torch.nn.Module):
             
     class upconv_block(torch.nn.Module):
         
-        def __init__(self, channel_in, channel_out, stride=2, kernel_size=3, dilation=1):    
+        def __init__(self, channel_in, channel_out, stride=2, kernel_size=3, dilation=2):    
             super().__init__()
             self.upsample = nn.ConvTranspose2d(channel_in, channel_out, kernel_size=kernel_size, stride=stride, padding=kernel_size//2, dilation=dilation, output_padding=1)
         
