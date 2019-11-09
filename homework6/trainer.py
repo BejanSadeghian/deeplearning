@@ -26,6 +26,8 @@ parser.add_argument('-flip', '--data_flip', type=bool, default=False)
 parser.add_argument('-jit', '--data_colorjitter', type=bool, default=False)
 parser.add_argument('-la', '--layers', type=str)
 parser.add_argument('-ml', '--model_label', type=str)
+parser.add_argument('-lo', '--loss', type=str, default='MSE')
+parser.add_argument('-op', '--optim', type=str, default='SGD')
 
 if __name__ == '__main__':
     import itertools
@@ -33,7 +35,7 @@ if __name__ == '__main__':
     hyper_params = {
         '--layers':[[32,32,64,64,128,128], [16,16,32,32,64,64,128], [16,16,32,32,64,64,128,128]],
         '--learning_rate':['1e-4'],
-        '--loss':['MSE']
+        '--loss':['MSE'],
         '--optim':['ADAM']
         # '--data_rotate':['False', 'True'],
         # '--data_flip':['False', 'True'],
