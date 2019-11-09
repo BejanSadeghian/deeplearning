@@ -80,7 +80,7 @@ class TopNHeap:
             heapreplace(self.elements, e)
 
 
-def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_length: int = 100, average_log_likelihood: bool = False):
+def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_length: int = 100, average_log_likelihood: bool = True):
     """
     Your code here
 
@@ -105,7 +105,8 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
         next_prob = np.exp(model.predict_all(string)[:,-1])
         return list(zip(*heapq.nlargest(beam_size, enumerate(next_prob), key=operator.itemgetter(1))))[0], next_prob
     
-    def get_ll(text, model, average_log_likelihood, vocab):
+    def get_ll(text, model, average_log_likelihood):
+        # print(log_likelihood(model, text) / len(text))
         ll = log_likelihood(model, text) / len(text) if average_log_likelihood else log_likelihood(model, text)
         return (text, ll)
         
@@ -116,30 +117,37 @@ def beam_search(model: LanguageModel, beam_size: int, n_results: int = 10, max_l
     track = []
     for i in init_letters:
 #        h.add(probabilities[i])
-        track.append((vocab[i], probabilities[i]))
+        track.append(get_ll(vocab[i], model, average_log_likelihood))
     end_bool = False
     for i in range(max_length):
+        # print(i,'d')
         period_counter = 0
         iteration = []
         for t in track:
             e = t[0] #the string
             if e[-1] == '.':
-                iteration.extend([t])
+                iteration.append(t)
                 period_counter  += 1
                 continue
             else:
-                test_nodes, probabilities = get_next_letters(e, beam_size, model, vocab)
-                iteration.extend([get_ll(e + vocab[new_char], model, average_log_likelihood, vocab) for new_char in test_nodes])      
+                # test_nodes, probabilities = get_next_letters(e, beam_size, model, vocab)
+                # iteration.append([get_ll(e + vocab[new_char], model, average_log_likelihood) for new_char in test_nodes])  
+                for letter in vocab:
+                    test_e = e+letter
+                    iteration.append( get_ll(test_e, model, average_log_likelihood))
 
             if period_counter == beam_size:
                 end_bool = True
+
         if end_bool:
             break
         else:
             iteration = list(set(iteration))
-#            print([len(x) for x in iteration])
+            # print(track)
+            # print(iteration)
             track = sorted(iteration, key=lambda x: x[1], reverse=True)[:beam_size]
-#            print(i, len(track), track)
+            # print(track)
+            # input()
     track = sorted(track, key=lambda x: x[1])
     return [x for x,y in track][:n_results]
             
