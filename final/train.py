@@ -29,7 +29,7 @@ def train(args):
             # print(images.shape)
 
             pred = model(images)
-            l = loss(pred, labels)
+            l = loss(pred, labels.squeeze())
 
             optimizer.zero_grad()
             l.backward()

@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
-# import pystk
+import pystk
 
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms.functional as TF
@@ -45,145 +45,145 @@ def quat_rot(r, v, inverse=False):
                      2 * (r[i] * r[(i + 2) % 3] + r[(i + 1) % 3] * r[3] * inv) * v[(i + 2) % 3] for i in range(3)])
 
 
-# class PyTux:
-#    _singleton = None
+class PyTux:
+   _singleton = None
 
-#    def __init__(self, screen_width=128, screen_height=96):
-#        assert PyTux._singleton is None, "Cannot create more than one pytux object"
-#        PyTux._singleton = self
-#        self.config = pystk.GraphicsConfig.hd()
-#        self.config.screen_width = screen_width
-#        self.config.screen_height = screen_height
-#        pystk.init(self.config)
-#        self.k = None
+   def __init__(self, screen_width=128, screen_height=96):
+       assert PyTux._singleton is None, "Cannot create more than one pytux object"
+       PyTux._singleton = self
+       self.config = pystk.GraphicsConfig.hd()
+       self.config.screen_width = screen_width
+       self.config.screen_height = screen_height
+       pystk.init(self.config)
+       self.k = None
 
-#    def _to_world(self, aim_point_image, proj, view, height=0):
-#        x, y, W, H = *aim_point_image, self.config.screen_width, self.config.screen_height
-#        pv_inv = np.linalg.pinv(proj @ view)
-#        xy, d = pv_inv.dot([float(x) / (W / 2) - 1, 1 - float(y) / (H / 2), 0, 1]), pv_inv[:, 2]
-#        x0, x1 = xy[:-1] / xy[-1], (xy+d)[:-1] / (xy+d)[-1]
-#        t = (height-x0[1]) / (x1[1] - x0[1])
-#        if t < 1e-3 or t > 10:
-#            # Project the point forward by a certain distance, if it would end up behind
-#            t = 10
-#        return t * x1 + (1-t) * x0
+   def _to_world(self, aim_point_image, proj, view, height=0):
+       x, y, W, H = *aim_point_image, self.config.screen_width, self.config.screen_height
+       pv_inv = np.linalg.pinv(proj @ view)
+       xy, d = pv_inv.dot([float(x) / (W / 2) - 1, 1 - float(y) / (H / 2), 0, 1]), pv_inv[:, 2]
+       x0, x1 = xy[:-1] / xy[-1], (xy+d)[:-1] / (xy+d)[-1]
+       t = (height-x0[1]) / (x1[1] - x0[1])
+       if t < 1e-3 or t > 10:
+           # Project the point forward by a certain distance, if it would end up behind
+           t = 10
+       return t * x1 + (1-t) * x0
 
-#    @staticmethod
-#    def _point_on_track(distance, track, offset=0.0):
-#        """
-#        Get a point at `distance` down the `track`. Optionally applies an offset after the track segment if found.
-#        Returns a 3d coordinate
-#        """
-#        node_idx = np.searchsorted(track.path_distance[..., 1],
-#                                   distance % track.path_distance[-1, 1]) % len(track.path_nodes)
-#        d = track.path_distance[node_idx]
-#        x = track.path_nodes[node_idx]
-#        t = (distance + offset - d[0]) / (d[1] - d[0])
-#        return x[1] * t + x[0] * (1 - t)
+   @staticmethod
+   def _point_on_track(distance, track, offset=0.0):
+       """
+       Get a point at `distance` down the `track`. Optionally applies an offset after the track segment if found.
+       Returns a 3d coordinate
+       """
+       node_idx = np.searchsorted(track.path_distance[..., 1],
+                                  distance % track.path_distance[-1, 1]) % len(track.path_nodes)
+       d = track.path_distance[node_idx]
+       x = track.path_nodes[node_idx]
+       t = (distance + offset - d[0]) / (d[1] - d[0])
+       return x[1] * t + x[0] * (1 - t)
 
-#    @staticmethod
-#    def _to_kart(x, kart):
-#        return quat_rot(kart.rotation, x - kart.location, True)
+   @staticmethod
+   def _to_kart(x, kart):
+       return quat_rot(kart.rotation, x - kart.location, True)
 
-#    def _to_image(self, x, proj, view):
-#        W, H = self.config.screen_width, self.config.screen_height
-#        p = proj @ view @ np.array(list(x) + [1])
-#        return np.array([W / 2 * (p[0] / p[-1] + 1), H / 2 * (1 - p[1] / p[-1])])
+   def _to_image(self, x, proj, view):
+       W, H = self.config.screen_width, self.config.screen_height
+       p = proj @ view @ np.array(list(x) + [1])
+       return np.array([W / 2 * (p[0] / p[-1] + 1), H / 2 * (1 - p[1] / p[-1])])
 
-#    def rollout(self, track, controller, planner=None, max_frames=1000, verbose=False, data_callback=None):
-#        """
-#        Play a level (track) for a single round.
-#        :param track: Name of the track
-#        :param controller: low-level controller, see controller.py
-#        :param planner: high-level planner, see planner.py
-#        :param max_frames: Maximum number of frames to play for
-#        :param verbose: Should we use matplotlib to show the agent drive?
-#        :param data_callback: Rollout calls data_callback(time_step, image, 2d_aim_point) every step, used to store the
-#                              data
-#        :return: Number of steps played
-#        """
-#        do_render = verbose or planner is not None or data_callback is not None
-#        if self.k is not None and self.k.config.track == track and do_render == self.k.config.render:
-#            self.k.restart()
-#            self.k.step()
-#        else:
-#            if self.k is not None:
-#                self.k.stop()
-#                del self.k
-#            config = pystk.RaceConfig(num_kart=1, laps=1, render=do_render, track=track)
-#            config.players[0].controller = pystk.PlayerConfig.Controller.PLAYER_CONTROL
+   def rollout(self, track, controller, planner=None, max_frames=1000, verbose=False, data_callback=None):
+       """
+       Play a level (track) for a single round.
+       :param track: Name of the track
+       :param controller: low-level controller, see controller.py
+       :param planner: high-level planner, see planner.py
+       :param max_frames: Maximum number of frames to play for
+       :param verbose: Should we use matplotlib to show the agent drive?
+       :param data_callback: Rollout calls data_callback(time_step, image, 2d_aim_point) every step, used to store the
+                             data
+       :return: Number of steps played
+       """
+       do_render = verbose or planner is not None or data_callback is not None
+       if self.k is not None and self.k.config.track == track and do_render == self.k.config.render:
+           self.k.restart()
+           self.k.step()
+       else:
+           if self.k is not None:
+               self.k.stop()
+               del self.k
+           config = pystk.RaceConfig(num_kart=1, laps=1, render=do_render, track=track)
+           config.players[0].controller = pystk.PlayerConfig.Controller.PLAYER_CONTROL
 
-#            self.k = pystk.Race(config)
-#            self.k.start()
-#            self.k.step()
+           self.k = pystk.Race(config)
+           self.k.start()
+           self.k.step()
 
-#        state = pystk.WorldState()
-#        track = pystk.Track()
+       state = pystk.WorldState()
+       track = pystk.Track()
 
-#        last_rescue = 0
+       last_rescue = 0
 
-#        if verbose:
-#            import matplotlib.pyplot as plt
-#            fig, ax = plt.subplots(1, 1)
+       if verbose:
+           import matplotlib.pyplot as plt
+           fig, ax = plt.subplots(1, 1)
 
-#        for t in range(max_frames):
+       for t in range(max_frames):
 
-#            state.update()
-#            track.update()
+           state.update()
+           track.update()
 
-#            kart = state.players[0].kart
+           kart = state.players[0].kart
 
-#            if np.isclose(kart.overall_distance / track.length, 1.0, atol=2e-3):
-#                if verbose:
-#                    print("Finished at t=%d" % t)
-#                break
+           if np.isclose(kart.overall_distance / track.length, 1.0, atol=2e-3):
+               if verbose:
+                   print("Finished at t=%d" % t)
+               break
 
-#            proj = np.array(state.players[0].camera.projection).T
-#            view = np.array(state.players[0].camera.view).T
+           proj = np.array(state.players[0].camera.projection).T
+           view = np.array(state.players[0].camera.view).T
 
-#            if data_callback is not None:
-#                aim_point_world = self._point_on_track(kart.distance_down_track + 20, track)
-#                ap = self._to_image(aim_point_world, proj, view)
-#                if 0 <= ap[0] < self.config.screen_width and 0 <= ap[1] < self.config.screen_height:
-#                    data_callback(t, np.array(self.k.render_data[0].image), ap)
+           if data_callback is not None:
+               aim_point_world = self._point_on_track(kart.distance_down_track + 20, track)
+               ap = self._to_image(aim_point_world, proj, view)
+               if 0 <= ap[0] < self.config.screen_width and 0 <= ap[1] < self.config.screen_height:
+                   data_callback(t, np.array(self.k.render_data[0].image), ap)
 
-#            if planner:
-#                image = np.array(self.k.render_data[0].image)
-#                aim_point_image = planner(TF.to_tensor(image)[None]).squeeze(0)
-#                aim_point_world = self._to_world(aim_point_image, proj, view, kart.location[1])
-#            else:
-#                aim_point_world = self._point_on_track(kart.distance_down_track + TRACK_OFFSET, track)
+           if planner:
+               image = np.array(self.k.render_data[0].image)
+               aim_point_image = planner(TF.to_tensor(image)[None]).squeeze(0)
+               aim_point_world = self._to_world(aim_point_image, proj, view, kart.location[1])
+           else:
+               aim_point_world = self._point_on_track(kart.distance_down_track + TRACK_OFFSET, track)
 
-#            aim_point_car = self._to_kart(aim_point_world, kart)
-#            current_vel = np.linalg.norm(kart.velocity)
-#            action = controller(aim_point_car, current_vel)
+           aim_point_car = self._to_kart(aim_point_world, kart)
+           current_vel = np.linalg.norm(kart.velocity)
+           action = controller(aim_point_car, current_vel)
 
-#            if current_vel < 1.0 and t - last_rescue > RESCUE_TIMEOUT:
-#                last_rescue = t
-#                action.rescue = True
+           if current_vel < 1.0 and t - last_rescue > RESCUE_TIMEOUT:
+               last_rescue = t
+               action.rescue = True
 
-#            if verbose:
-#                ax.clear()
-#                ax.imshow(self.k.render_data[0].image)
-#                ax.add_artist(plt.Circle(self._to_image(kart.location, proj, view), 2, ec='b', fill=False, lw=1.5))
-#                ax.add_artist(plt.Circle(self._to_image(aim_point_world, proj, view), 2, ec='r', fill=False, lw=1.5))
-#                if planner:
-#                    ap = self._point_on_track(kart.distance_down_track + TRACK_OFFSET, track)
-#                    ax.add_artist(plt.Circle(self._to_image(ap, proj, view), 2, ec='g', fill=False, lw=1.5))
-#                plt.pause(1e-3)
+           if verbose:
+               ax.clear()
+               ax.imshow(self.k.render_data[0].image)
+               ax.add_artist(plt.Circle(self._to_image(kart.location, proj, view), 2, ec='b', fill=False, lw=1.5))
+               ax.add_artist(plt.Circle(self._to_image(aim_point_world, proj, view), 2, ec='r', fill=False, lw=1.5))
+               if planner:
+                   ap = self._point_on_track(kart.distance_down_track + TRACK_OFFSET, track)
+                   ax.add_artist(plt.Circle(self._to_image(ap, proj, view), 2, ec='g', fill=False, lw=1.5))
+               plt.pause(1e-3)
 
-#            self.k.step(action)
-#            t += 1
-#        return t
+           self.k.step(action)
+           t += 1
+       return t
 
-#    def close(self):
-#        """
-#        Call this function, once you're done with PyTux
-#        """
-#        if self.k is not None:
-#            self.k.stop()
-#            del self.k
-#        pystk.clean()
+   def close(self):
+       """
+       Call this function, once you're done with PyTux
+       """
+       if self.k is not None:
+           self.k.stop()
+           del self.k
+       pystk.clean()
 
 
 def spatial_argmax(logit):
