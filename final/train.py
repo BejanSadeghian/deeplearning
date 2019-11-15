@@ -3,7 +3,7 @@ import torch.utils.tensorboard as tb
 import argparse
 
 from utils import load_data
-from model import Action
+from model import Action, save_model
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -23,12 +23,17 @@ def train(args):
     global_step = 0
     for e in range(args.epochs):
         print('Epoch:',e)
+        all_targets = []
+        all_predictions = []
         for batch in train_data:
             images = batch[0].to(device)
             labels = batch[1].to(device)
-            # print(images.shape)
+            all_targets.append(batch[1])
 
             pred = model(images)
+            print(pred[0])
+            print(labels[0])
+            all_predictions.append(pred.cpu())
             l = loss(pred, labels.squeeze())
 
             optimizer.zero_grad()
@@ -37,6 +42,8 @@ def train(args):
 
             train_logger.add_scalar('loss', l.cpu(), global_step=global_step)
             global_step += 1
+        
+        save_model(model)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

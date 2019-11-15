@@ -81,5 +81,20 @@ class Action(torch.nn.Module):
         
         return self.classifier(z.mean([2,3]))
 
+def save_model(model):
+    from torch import save
+    from os import path
+    if isinstance(model, CNNClassifier):
+        return save(model.state_dict(), path.join(path.dirname(path.abspath(__file__)), 'cnn.th'))
+    raise ValueError("model type '%s' not supported!"%str(type(model)))
+
+
+def load_model():
+    from torch import load
+    from os import path
+    r = CNNClassifier()
+    r.load_state_dict(load(path.join(path.dirname(path.abspath(__file__)), 'cnn.th'), map_location='cpu'))
+    return r
+    
 if __name__ == '__main__':
     model = Action()
