@@ -2,13 +2,14 @@ import torch
 import torch.utils.tensorboard as tb
 import argparse
 import os
+import numpy as np
 
 from utils import load_data
 from model import Action, save_model
 
 def getRMSE(list_preds, list_targets, idx):
-    predicted = [x[idx] for x in list_preds]
-    targets = [x[idx] for x in list_targets]
+    predicted = np.array([x[idx] for x in list_preds])
+    targets = np.array([x[idx] for x in list_targets])
     return ((predicted - targets)**2).mean().sqrt()
 
 def train(args):
