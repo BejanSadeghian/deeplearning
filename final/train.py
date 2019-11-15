@@ -6,7 +6,7 @@ from utils import load_data
 from model import Action, save_model
 
 def getRMSE(list_preds, list_targets, idx):
-    predicted = [x[idx] for x in list_pred]
+    predicted = [x[idx] for x in list_preds]
     targets = [x[idx] for x in list_targets]
     return ((predicted - targets)**2).mean().sqrt()
 
