@@ -5,6 +5,11 @@ import argparse
 from utils import load_data
 from model import Action, save_model
 
+def getRMSE(list_preds, list_targets, idx):
+    predicted = [x[idx] for x in list_pred]
+    targets = [x[idx] for x in list_targets]
+    return ((predicted - targets)**2).mean().sqrt()
+
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print('Device:',device)
@@ -28,11 +33,9 @@ def train(args):
         for batch in train_data:
             images = batch[0].to(device)
             labels = batch[1].to(device)
-            all_targets.append(batch[1])
+            all_targets.append(batch[1].cpu())
 
             pred = model(images)
-            print(pred[0])
-            print(labels[0])
             all_predictions.append(pred.cpu())
             l = loss(pred, labels.squeeze())
 
@@ -42,7 +45,9 @@ def train(args):
 
             train_logger.add_scalar('loss', l.cpu(), global_step=global_step)
             global_step += 1
-        
+        train_logger.add_scalar('RMSE_steer', getRMSE(all_predictions, all_targets, 0),global_step=e)
+        train_logger.add_scalar('RMSE_acceleration', getRMSE(all_predictions, all_targets, 1),global_step=e)
+        train_logger.add_scalar('RMSE_brake', getRMSE(all_predictions, all_targets, 2),global_step=e)
         save_model(model)
 
 if __name__ == '__main__':
