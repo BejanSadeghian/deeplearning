@@ -22,8 +22,8 @@ def train(args):
     valid_data = load_data(args.valid_path, batch_size=args.batch_size)
 
     if args.logdir is not None:
-        train_logger = tb.SummaryWriter(log_dir=args.logdir, flush_secs=1, filename_suffix='train_{}'.format(args.log_suffix))
-        valid_logger = tb.SummaryWriter(log_dir=args.logdir, flush_secs=1, filename_suffix='valid_{}'.format(args.log_suffix))
+        train_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'train_{}'.format(args.log_suffix)), flush_secs=1)
+        valid_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'valid_{}'.format(args.log_suffix)), flush_secs=1)
 
     global_step = 0
     for e in range(args.epochs):
