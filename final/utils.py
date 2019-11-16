@@ -48,7 +48,7 @@ class AgentData(torch.utils.data.DataLoader):
         else:
             image_to_tensor = transforms.ToTensor()
         img = image_to_tensor(img)
-        print(img.shape)
+        # print(img.shape)
         return (img, torch.tensor(targets, dtype=torch.float))
 
 def load_data(path_to_data, batch_size=64):
