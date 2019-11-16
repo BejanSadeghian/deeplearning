@@ -35,10 +35,10 @@ def train(args):
         for batch in train_data:
             images = batch[0].to(device)
             labels = batch[1].to(device)
-            all_targets.append(batch[1].cpu())
+            all_targets.append(batch[1].cpu().numpy())
 
             pred = model(images)
-            all_predictions.append(pred.cpu())
+            all_predictions.append(pred.cpu().numpy())
             l = loss(pred, labels.squeeze())
 
             optimizer.zero_grad()
