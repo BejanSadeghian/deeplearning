@@ -10,7 +10,7 @@ from model import Action, save_model
 def getRMSE(list_preds, list_targets, idx):
     predicted = np.array([x[idx] for x in list_preds])
     targets = np.array([x[idx] for x in list_targets])
-    return ((predicted - targets)**2).mean().sqrt()
+    return np.sqrt(((predicted - targets)**2).mean())
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
