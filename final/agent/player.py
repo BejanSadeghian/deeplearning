@@ -1,4 +1,5 @@
 import numpy as np
+from ..model import load_model, Action
 
 class HockeyPlayer:
     """
@@ -21,7 +22,9 @@ class HockeyPlayer:
         Set up a soccer player.
         The player_id starts at 0 and increases by one for each player added. You can use the player id to figure out your team (player_id % 2), or assign different roles to different agents.
         """
-        pass
+        all_players = ['adiumy', 'amanda', 'beastie', 'emule', 'gavroche', 'gnu', 'hexley', 'kiki', 'konqi', 'nolok', 'pidgin', 'puffy', 'sara_the_racer', 'sara_the_wizard', 'suzanne', 'tux', 'wilber', 'xue']
+        self.kart = all_players[np.random.choice(len(all_players))]
+        self.agent = load_model(os.path.relpath('action.th'))
         
     def act(self, image, player_info):
         """
@@ -34,6 +37,12 @@ class HockeyPlayer:
         """
         Your code here.
         """
+        steer, acceleration, brake = self.agent(image)
+        action['steer'] = steer
+        action['acceleration'] = acceleration
+        action['brake'] = brake
 
         return action
 
+if __name__ == '__main__':
+    players = HockeyPlayer()

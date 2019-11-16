@@ -8,9 +8,11 @@ from torchvision import transforms
 
 class AgentData(torch.utils.data.DataLoader):
 
-    def __init__(self, dataset_path, norm=True, recalc_norm=False):
+    def __init__(self, dataset_path, norm=True, recalc_norm=False, resize=(130,100)):
         self.norm = norm
         self.dataset_path = dataset_path
+        self.resize = resize
+
         self.ids = [x for x in os.listdir(self.dataset_path) if x.endswith('.csv')]
         data = []
         for i in self.ids:
@@ -39,14 +41,14 @@ class AgentData(torch.utils.data.DataLoader):
     def __getitem__(self, idx):
         image = self.data[idx][0]
         targets = self.data[idx][1:]
-
         img = Image.open(os.path.join(self.dataset_path, image))
-        
+        img = img.resize(self.resize) #Resize image
         if self.norm:
             image_to_tensor = transforms.Compose([transforms.ToTensor(), transforms.Normalize(self.mean, self.std)])
         else:
             image_to_tensor = transforms.ToTensor()
         img = image_to_tensor(img)
+        print(img.shape)
         return (img, torch.tensor(targets, dtype=torch.float))
 
 def load_data(path_to_data, batch_size=64):

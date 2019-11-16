@@ -1,6 +1,6 @@
 import pystk
 import numpy as np
-
+from datetime import datetime, timedelta
 
 class Player:
     def __init__(self, player, team=0):
@@ -48,10 +48,10 @@ class Tournament:
             import os
             if not os.path.exists(save):
                 os.makedirs(save)
-
+        time = datetime.now()
         for t in range(max_frames):
             print('\rframe %d' % t, end='\r')
-
+            print('\rframe {} time {}'.format(t, (datetime.now() - time).seconds), end='\r')
             state.update()
 
             list_actions = []
