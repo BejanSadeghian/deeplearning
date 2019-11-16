@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-import numpy as np
 from torchvision import transforms
 from PIL import Image
 
@@ -35,14 +34,15 @@ class Action(torch.nn.Module):
         def forward(self, x, output_pad=False):
             return F.relu(self.upsample(x))
             
-    def __init__(self, layers=[32,32,64,64,128,128], image_size=(96,128)):
+    def __init__(self, layers=[32,32,64,64,128,128]):
         super().__init__()
 
         """
         Your code here
         """
+        self.mean = torch.tensor([8.9478, 8.9478, 8.9478], dtype=torch.float) 
+        self.std = torch.tensor([47.0021, 42.1596, 39.2562], dtype=torch.float)
 
-        self.image_size = image_size
         c = 3        
         self.network = torch.nn.ModuleList()
         for l in layers:
@@ -60,16 +60,24 @@ class Action(torch.nn.Module):
         self.classifier = torch.nn.Linear(c, 3)
         
 
-    def forward(self, x):
+    def forward(self, x, normalize=True, inference=True):
         """
         Your code here
         Predict the aim point in image coordinate, given the supertuxkart image
         @img: (B,3,96,128)
         return (B,2)
         """
-        print(x.numpy().shape)
-        input()
-        x = np.asarray(transforms.Resize((100,130))(Image.fromarray(x.numpy())))
+        # print(x.numpy().shape)
+        # img = Image.fromarray(x.numpy())
+        # print(img.size)
+        # x = np.toarray(img.resize((100,130))) #Resize image
+        if inference:
+            # print(x.shape)
+            img = transforms.functional.to_pil_image(x.squeeze())
+            x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
+            # print(x.shape)
+        if normalize:
+            x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        
         ##Add preprocessing
         activations = []
         for i, layer in enumerate(self.network):
