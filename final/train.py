@@ -38,7 +38,7 @@ def train(args):
             all_targets.append(batch[1].cpu().numpy())
 
             pred = model(images)
-            all_predictions.append(pred.cpu().numpy())
+            all_predictions.append(pred.cpu().detach().numpy())
             l = loss(pred, labels.squeeze())
 
             optimizer.zero_grad()
