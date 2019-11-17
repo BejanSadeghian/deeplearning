@@ -125,11 +125,11 @@ def draw_data(mat, yolo, min_val=5):
     w = w if w%2 == 0 else w + 1
     h = h if h%2 == 0 else h + 1
     
-    overlay = np.ones((w,h))
+    # overlay = np.ones((w,h))
     
-    overlay_crop = mat[int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0])), int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0]))].shape
-    overlay = overlay[:overlay_crop[0], :overlay_crop[1]]
-    mat[int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0])), int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0]))] = overlay
+    # overlay_crop = mat[int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0])), int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0]))].shape
+    # overlay = overlay[:overlay_crop[0], :overlay_crop[1]]
+    mat[int(max(y-(h/2), 0)) : int(min(y+(h/2), mat.shape[0])), int(max(x-(w/2), 0)) : int(min(x+(w/2), mat.shape[0]))] = 1.0
     return mat
 
 def load_data(path_to_data, batch_size=64):
