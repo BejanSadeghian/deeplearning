@@ -41,15 +41,15 @@ def train(args):
     image_to_tensor = transforms.ToTensor()
 
     img = Image.open(os.path.join(args.train_path, 'player02_00195.png'))
-    img = img.resize((100,130)) #Resize image
+    img = img.resize((130,100)) #Resize image
     valid_image0 = image_to_tensor(img)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00254.png'))
-    img = img.resize((100,130)) #Resize image
+    img = img.resize((130,100)) #Resize image
     valid_image1 = image_to_tensor(img)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00627.png'))
-    img = img.resize((100,130)) #Resize image
+    img = img.resize((130,100)) #Resize image
     valid_image2 = image_to_tensor(img)
 
     if args.logdir is not None:
