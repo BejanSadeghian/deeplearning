@@ -26,12 +26,12 @@ def train(args):
 
     #Sample image
     train_dataset = VisionData(args.train_path)
-    image_id = np.random.randint(0,100)
-    sample_image0 = train_dataset[image_id]
-    image_id = np.random.randint(100,200)
-    sample_image1 = train_dataset[image_id]
-    image_id = np.random.randint(200,300)
-    sample_image2 = train_dataset[image_id]
+    # image_id = np.random.randint(300,700)
+    sample_image0 = train_dataset[394]
+    # image_id = np.random.randint(700,900)
+    sample_image1 = train_dataset[423]
+    # image_id = np.random.randint(200,300)
+    sample_image2 = train_dataset[473]
 
     if args.logdir is not None:
         train_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'train_{}'.format(args.log_suffix)), flush_secs=1)
@@ -65,19 +65,19 @@ def train(args):
         im = sample_image0[0].unsqueeze(0)
         heatmap = model(im.to(device))
         heatmap = heatmap.squeeze(0)
-        train_logger.add_image('Original',sample_image0[0].cpu(), global_step=e)
-        train_logger.add_image('Heatmap',heatmap.cpu(), global_step=e)
-        train_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(heatmap.cpu()), global_step=e)
-        train_logger.add_image('Actual',sample_image0[2].cpu(), global_step=e)
+        train_logger.add_image('Original0',sample_image0[0].cpu(), global_step=e)
+        train_logger.add_image('Heatmap0',heatmap.cpu(), global_step=e)
+        train_logger.add_image('Heatmap_Sigmoid0',torch.sigmoid(heatmap.cpu()), global_step=e)
+        train_logger.add_image('Actual0',sample_image0[2].cpu(), global_step=e)
 
         sample = sample_image1[0].to(device)
         im = sample_image1[0].unsqueeze(0)
         heatmap = model(im.to(device))
         heatmap = heatmap.squeeze(0)
-        train_logger.add_image('Original',sample_image1[0].cpu(), global_step=e)
-        train_logger.add_image('Heatmap',heatmap.cpu(), global_step=e)
-        train_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(heatmap.cpu()), global_step=e)
-        train_logger.add_image('Actual',sample_image1[2].cpu(), global_step=e)
+        train_logger.add_image('Original1',sample_image1[0].cpu(), global_step=e)
+        train_logger.add_image('Heatmap1',heatmap.cpu(), global_step=e)
+        train_logger.add_image('Heatmap_Sigmoid1',torch.sigmoid(heatmap.cpu()), global_step=e)
+        train_logger.add_image('Actual1',sample_image1[2].cpu(), global_step=e)
 
         sample = sample_image2[0].to(device)
         im = sample_image2[0].unsqueeze(0)
