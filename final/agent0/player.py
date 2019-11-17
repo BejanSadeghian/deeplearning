@@ -43,6 +43,7 @@ class HockeyPlayer:
         img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
 
         decision = self.agent(img).detach().numpy()[0]
+        # print(decision)
         steer, acceleration, brake = decision
         action['steer'] = steer
         action['acceleration'] = acceleration
