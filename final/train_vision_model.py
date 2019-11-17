@@ -4,6 +4,8 @@ import argparse
 import os
 import numpy as np
 
+from PIL import Image
+
 from utils import load_data, load_vision_data, VisionData
 from vision_model import Vision, save_model
 
@@ -32,6 +34,22 @@ def train(args):
     sample_image1 = train_dataset[423]
     # image_id = np.random.randint(200,300)
     sample_image2 = train_dataset[473]
+
+
+    #Valid images
+    image_to_tensor = transforms.ToTensor()
+
+    img = Image.open(os.path.join(args.train_path, 'player02_00195.png'))
+    img = img.resize((100,130)) #Resize image
+    valid_image0 = image_to_tensor(img)
+
+    img = Image.open(os.path.join(args.train_path, 'player02_00254.png'))
+    img = img.resize((100,130)) #Resize image
+    valid_image1 = image_to_tensor(img)
+
+    img = Image.open(os.path.join(args.train_path, 'player02_00627.png'))
+    img = img.resize((100,130)) #Resize image
+    valid_image2 = image_to_tensor(img)
 
     if args.logdir is not None:
         train_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'train_{}'.format(args.log_suffix)), flush_secs=1)
@@ -87,6 +105,29 @@ def train(args):
         train_logger.add_image('Heatmap',heatmap.cpu(), global_step=e)
         train_logger.add_image('Heatmap_Sigmoid',torch.sigmoid(heatmap.cpu()), global_step=e)
         train_logger.add_image('Actual',sample_image2[2].cpu(), global_step=e)
+
+        ##Valid images
+        im = valid_image0
+        heatmap = model(im.to(device))
+        heatmap = heatmap.squeeze(0)
+        train_logger.add_image('Original1_valid',im.cpu(), global_step=e)
+        train_logger.add_image('Heatmap1_valid',heatmap.cpu(), global_step=e)
+        train_logger.add_image('Heatmap_Sigmoid1_valid',torch.sigmoid(heatmap.cpu()), global_step=e)
+        
+        im = valid_image1
+        heatmap = model(im.to(device))
+        heatmap = heatmap.squeeze(0)
+        train_logger.add_image('Original1_valid',im.cpu(), global_step=e)
+        train_logger.add_image('Heatmap1_valid',heatmap.cpu(), global_step=e)
+        train_logger.add_image('Heatmap_Sigmoid1_valid',torch.sigmoid(heatmap.cpu()), global_step=e)
+        
+        im = valid_image2
+        heatmap = model(im.to(device))
+        heatmap = heatmap.squeeze(0)
+        train_logger.add_image('Original1_valid',im.cpu(), global_step=e)
+        train_logger.add_image('Heatmap1_valid',heatmap.cpu(), global_step=e)
+        train_logger.add_image('Heatmap_Sigmoid1_valid',torch.sigmoid(heatmap.cpu()), global_step=e)
+
 
         save_model(model)
 
