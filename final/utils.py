@@ -117,19 +117,18 @@ class VisionData(torch.utils.data.DataLoader):
         return (img, torch.tensor(targets, dtype=torch.float), torch.tensor(bb_target, dtype=torch.float)[None,:,:])
 
 def draw_data(mat, yolo, min_val=5):
-    mat_x, mat_y = mat.shape
+    mat_y, mat_x = mat.shape
     x = int(yolo[1] * mat_x)
     y = int(yolo[2] * mat_y)
     w = int(yolo[3] * mat_x) if int(yolo[3] * mat_x) > min_val else min_val 
-    h = int(yolo[4] * mat_y) if int(yolo[4] * mat_x) > min_val else min_val
+    h = int(yolo[4] * mat_y) if int(yolo[4] * mat_y) > min_val else min_val
     w = w if w%2 == 0 else w + 1
     h = h if h%2 == 0 else h + 1
     
-    # overlay = np.ones((w,h))
-    
-    # overlay_crop = mat[int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0])), int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0]))].shape
+    # overlay = np.ones((h,w))
+    # overlay_crop = mat[int(max(y-(h/2), 0)) : int(min(y+(h/2), mat_y)), int(max(x-(w/2), 0)) : int(min(x+(w/2), mat_x))].shape
     # overlay = overlay[:overlay_crop[0], :overlay_crop[1]]
-    mat[int(max(y-(h/2), 0)) : int(min(y+(h/2), mat.shape[0])), int(max(x-(w/2), 0)) : int(min(x+(w/2), mat.shape[0]))] = 1.0
+    mat[int(max(y-(h/2), 0)) : int(min(y+(h/2), mat_y)), int(max(x-(w/2), 0)) : int(min(x+(w/2), mat_x))] = 1.0
     return mat
 
 def load_data(path_to_data, batch_size=64):
