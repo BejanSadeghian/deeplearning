@@ -7,12 +7,14 @@ import PIL.Image
 import os, sys
 import csv
 
-config = pystk.GraphicsConfig.hd()
-config.screen_width = 400
-config.screen_height = 300
-pystk.init(config)
 
-def rollout(num_players=4, max_steps=1000, track='icy_soccer_field', save='train_data'):
+
+def rollout(num_players=4, max_steps=1000, track='icy_soccer_field', save='train_data_temp'):
+    config = pystk.GraphicsConfig.hd()
+    config.screen_width = 400
+    config.screen_height = 300
+    pystk.init(config)
+
     race_config = pystk.RaceConfig(num_kart=num_players, track=track, mode=pystk.RaceConfig.RaceMode.SOCCER)
     race_config.players.pop()
 

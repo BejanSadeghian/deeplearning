@@ -8,7 +8,7 @@ from torchvision import transforms
 
 class AgentData(torch.utils.data.DataLoader):
 
-    def __init__(self, dataset_path, norm=True, recalc_norm=False, resize=(130,100)):
+    def __init__(self, dataset_path, norm=False, recalc_norm=False, resize=(130,100)):
         self.norm = norm
         self.dataset_path = dataset_path
         self.resize = resize

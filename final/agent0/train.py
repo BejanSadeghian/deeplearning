@@ -15,7 +15,7 @@ def getRMSE(list_preds, list_targets, idx):
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print('Device:',device)
-    model = Action().to(device)
+    model = Action(normalize=True, inference=False).to(device)
 
     loss = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -25,7 +25,7 @@ def train(args):
 
     if args.logdir is not None:
         train_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'train_{}'.format(args.log_suffix)), flush_secs=1)
-        valid_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'valid_{}'.format(args.log_suffix)), flush_secs=1)
+        # valid_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'valid_{}'.format(args.log_suffix)), flush_secs=1)
 
     global_step = 0
     for e in range(args.epochs):

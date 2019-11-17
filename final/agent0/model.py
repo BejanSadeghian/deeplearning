@@ -34,12 +34,14 @@ class Action(torch.nn.Module):
         def forward(self, x, output_pad=False):
             return F.relu(self.upsample(x))
             
-    def __init__(self, layers=[32,32,64,64,128,128]):
+    def __init__(self, layers=[32,32,64,64,128,128], normalize=True, inference=True):
         super().__init__()
 
         """
         Your code here
         """
+        self.normalize = normalize
+        self.inference = inference
         self.mean = torch.tensor([8.9478, 8.9478, 8.9478], dtype=torch.float) 
         self.std = torch.tensor([47.0021, 42.1596, 39.2562], dtype=torch.float)
 
@@ -60,24 +62,21 @@ class Action(torch.nn.Module):
         self.classifier = torch.nn.Linear(c, 3)
         
 
-    def forward(self, x, normalize=True, inference=True):
+    def forward(self, x):
         """
         Your code here
         Predict the aim point in image coordinate, given the supertuxkart image
         @img: (B,3,96,128)
         return (B,2)
         """
-        # print(x.numpy().shape)
-        # img = Image.fromarray(x.numpy())
-        # print(img.size)
-        # x = np.toarray(img.resize((100,130))) #Resize image
-        if inference:
-            # print(x.shape)
+
+        if self.inference:
             img = transforms.functional.to_pil_image(x.squeeze())
             x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
-            # print(x.shape)
-        if normalize:
+
+        if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        
+        
         ##Add preprocessing
         activations = []
         for i, layer in enumerate(self.network):
@@ -88,10 +87,7 @@ class Action(torch.nn.Module):
         for i, layer in enumerate(self.upnetwork[1:]):
             x = torch.cat([z[:,:, :activations[-2-i].size(2), :activations[-2-i].size(3)], activations[-2-i]], dim=1)
             z = layer(x)
-        # heatmap = F.sigmoid(self.classifier(z))
-        # print(z.shape)
-        # heatmap = heatmap.squeeze(1)
-        
+
         return self.classifier(z.mean([2,3]))
 
 def save_model(model, name='action'):
