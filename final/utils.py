@@ -120,16 +120,16 @@ def draw_data(mat, yolo, min_val=5):
     mat_x, mat_y = mat.shape
     x = int(yolo[1] * mat_x)
     y = int(yolo[2] * mat_y)
-    w = int(yolo[3] * mat_x) if int(yolo[3] * mat_x) > min_val else min_val 
-    h = int(yolo[4] * mat_y) if int(yolo[4] * mat_x) > min_val else min_val
+    w = int(yolo[3] * mat_x) if int(yolo[3] * mat_x-1) > min_val else min_val 
+    h = int(yolo[4] * mat_y) if int(yolo[4] * mat_x-1) > min_val else min_val
     w = w if w%2 == 0 else w + 1
     h = h if h%2 == 0 else h + 1
     
     overlay = np.ones((w,h))
     
-    overlay_crop = mat[int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0])), int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0]))].shape
+    overlay_crop = mat[int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0]-1)), int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0]-1))].shape
     overlay = overlay[:overlay_crop[0], :overlay_crop[1]]
-    mat[int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0])), int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0]))] = overlay
+    mat[int(max(y-h/2, 0)) : int(min(y+h/2, mat.shape[0]-1)), int(max(x-w/2, 0)) : int(min(x+w/2, mat.shape[0]-1))] = overlay
     return mat
 
 def load_data(path_to_data, batch_size=64):
@@ -142,7 +142,7 @@ def load_vision_data(path_to_data, batch_size=64):
 
 if __name__ == '__main__':
     data = VisionData('/Users/bsadeghian/Documents/UTCS/Deep Learning/deeplearning/final/train_data')
-    print(data[0])
+    print(data[473])
     # import matplotlib.pyplot as plt
     # print(data[0][2])
     # plt.imshow(data[0][2].numpy())
