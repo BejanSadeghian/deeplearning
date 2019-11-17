@@ -61,6 +61,7 @@ class VisionData(torch.utils.data.DataLoader):
         self.resize = resize
 
         self.ids = [x for x in os.listdir(self.dataset_path) if x.endswith('.csv') and bool(re.search('player00',x, flags=re.I))]
+        self.ids.sort()
         data = []
         for i in self.ids:
             with open(os.path.join(self.dataset_path, i)) as file_obj:
