@@ -43,6 +43,8 @@ class Tournament:
 
     def play(self, save=None, max_frames=50):
         state = pystk.WorldState()
+        # soccer = pystk.Soccer()
+        # soccer_ball = pystk.SoccerBall()
         if save is not None:
             import PIL.Image
             import os
@@ -50,7 +52,7 @@ class Tournament:
                 os.makedirs(save)
         time = datetime.now()
         for t in range(max_frames):
-            print('\rframe %d' % t, end='\r')
+            # print('\rframe %d' % t, end='\r')
             print('\rframe {} time {}'.format(t, (datetime.now() - time).seconds), end='\r')
             state.update()
 
@@ -72,6 +74,13 @@ class Tournament:
             s = self.k.step(list_actions)
             if not s:  # Game over
                 break
+            # print(state.soccer.score)
+            # print(state.soccer.ball.location)
+            # print(state.soccer.goal_line)
+            # print(state.karts[0].location)
+            # print(dir(state.karts[0]))
+            # print(t)
+            # print('end')
 
         if save is not None:
             import subprocess

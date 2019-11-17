@@ -4,9 +4,22 @@ import argparse
 import os
 import numpy as np
 import pystk
+from .player import HockeyPlayer
 
 # from utils import load_data
-from model import Action, save_model
+from .model import Action, save_model
+
+class Player:
+    def __init__(self, player, team=0):
+        self.player = player
+        self.team = team
+
+    @property
+    def config(self):
+        return pystk.PlayerConfig(controller=pystk.PlayerConfig.Controller.PLAYER_CONTROL, kart=self.player.kart, team=self.team)
+    
+    def __call__(self, image, player_info):
+        return self.player.act(image, player_info)
 
 def getRMSE(list_preds, list_targets, idx):
     predicted = np.array([x[idx] for x in list_preds])
@@ -36,38 +49,49 @@ def train(args):
     pystk.init(config)
     race_config = pystk.RaceConfig(num_kart=1, track='icy_soccer_field', mode=pystk.RaceConfig.RaceMode.SOCCER)
     race_config.players.pop()
-    for i in range(num_players):
-        o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = int((i+1)%2.0))
-        race_config.players.append(o)
-    
+    # for i in range(num_players):
+    # o = Player(HockeyPlayer(1)) #TODO: change the code to use the agent to make deecisions but also update with eaech epoch
+    # race_config.players.append(o.config)
+    i=0
+    o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = int((i+1)%2.0))
+    race_config.players.append(o)
 
     global_step = 0
     for e in range(args.epochs):
         all_targets = []
         all_predictions = []
-        
+
         k = pystk.Race(race_config)
         k.start()
         try:
             k.step() #Take on step to start
             state = pystk.WorldState()
 
-            for t in range(max_steps):
-                print('\rEpoch: {} Step: {}'.format(e,t), end='\r')
-                state.update()
+            for t in range(max_steps//batch_size):
+                batch_targets = []
+                batch_images = []
+                for b in range(batch_size):
+                    print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps//batch_size), end='\r')
+                    state.update()
 
-                s = k.step()
-                # t_actions = []
-                # for i in range(num_players):
-
-                la = k.last_action[i]
-                img = torch.tensor(np.array(k.render_data[i].image), dtype=torch.float).to(device).permute(2,0,1)
-                # print(img.shape)
-                p = model(img[None])
-                a = torch.tensor((la.steer, la.acceleration, la.brake), dtype=torch.float)
+                    s = k.step()
+                    # t_actions = []
+                    # for i in range(num_players):
+                    i=0
+                    la = k.last_action[i]
+                    img = torch.tensor(np.array(k.render_data[i].image), dtype=torch.float).to(device).permute(2,0,1)
+                    
+                    # p = model(img[None])
+                    a = torch.tensor((la.steer, la.acceleration, la.brake), dtype=torch.float)
+                    batch_images.append(img[None])
+                    batch_targets.append(a[None])
+                x = torch.cat(batch_images)
+                # print(x.shape)
+                p = model(x)
+                a = torch.cat(batch_targets).to(device)
 
                 optimizer.zero_grad()
-                l = loss(p, a[None].to(device))
+                l = loss(p, a)
                 l.backward()
                 optimizer.step()
 
@@ -82,7 +106,7 @@ def train(args):
         train_logger.add_scalar('RMSE_steer', getRMSE(all_predictions, all_targets, 0),global_step=e)
         train_logger.add_scalar('RMSE_acceleration', getRMSE(all_predictions, all_targets, 1),global_step=e)
         train_logger.add_scalar('RMSE_brake', getRMSE(all_predictions, all_targets, 2),global_step=e)
-        save_model(model)
+        save_model(model, 'temp')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
