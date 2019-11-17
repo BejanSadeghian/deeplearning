@@ -5,6 +5,7 @@ import os
 import numpy as np
 
 from PIL import Image
+from torchvision import transforms
 
 from utils import load_data, load_vision_data, VisionData
 from vision_model import Vision, save_model
