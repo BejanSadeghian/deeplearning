@@ -71,8 +71,19 @@ class Action(torch.nn.Module):
         """
 
         if self.inference:
-            img = transforms.functional.to_pil_image(x.squeeze())
-            x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
+            x = x.squeeze()
+            # print(x.shape)
+            if len(x.shape) == 4:
+                images = []
+                for i in x:
+                    img = transforms.functional.to_pil_image(i)
+                    x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
+                    images.append(x)
+                x = torch.cat(images)
+                # print(x.shape)
+            else:
+                img = transforms.functional.to_pil_image(x)
+                x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
 
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        

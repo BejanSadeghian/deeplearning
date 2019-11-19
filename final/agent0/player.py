@@ -3,6 +3,7 @@ import numpy as np
 import torch
 
 from .model import load_model, Action
+from .vision_model import load_vision_model, Vision
 
 class HockeyPlayer:
     """
@@ -28,6 +29,7 @@ class HockeyPlayer:
         all_players = ['adiumy', 'amanda', 'beastie', 'emule', 'gavroche', 'gnu', 'hexley', 'kiki', 'konqi', 'nolok', 'pidgin', 'puffy', 'sara_the_racer', 'sara_the_wizard', 'suzanne', 'tux', 'wilber', 'xue']
         self.kart = all_players[np.random.choice(len(all_players))]
         self.agent = load_model(os.path.relpath('action'))
+        self.vision = load_vision_model(os.path.relpath('vision'))
         
     def act(self, image, player_info):
         """
@@ -41,13 +43,14 @@ class HockeyPlayer:
         Your code here.
         """
         img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
-
-        decision = self.agent(img).detach().numpy()[0]
+        # print(img.shape)
+        heatmap = self.vision(img)
+        decision = self.agent(heatmap).detach().numpy()[0]
         # print(decision)
         steer, acceleration, brake = decision
         action['steer'] = steer
         action['acceleration'] = acceleration
-        action['brake'] = brake
+        action['brake'] = False if brake < 0.5 else True
 
         return action
 

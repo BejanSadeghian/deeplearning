@@ -14,3 +14,6 @@ pulled pork
 hamburger
 cavity
 ball
+box
+goal_red
+goal_blue
