@@ -9,7 +9,7 @@ import csv
 
 
 
-def rollout(num_players=4, max_steps=1000, track='icy_soccer_field', save='train_data_temp'):
+def rollout(num_players=1, max_steps=1000, track='icy_soccer_field', save='train_data_single'):
     config = pystk.GraphicsConfig.hd()
     config.screen_width = 400
     config.screen_height = 300
@@ -22,7 +22,7 @@ def rollout(num_players=4, max_steps=1000, track='icy_soccer_field', save='train
         os.makedirs(save)
 
     for i in range(num_players):
-        o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = int((i+1)%2.0))
+        o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)#int((i+1)%2.0))
         race_config.players.append(o)
 
     active_players = race_config.players
