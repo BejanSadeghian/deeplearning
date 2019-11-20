@@ -54,11 +54,12 @@ class AgentData(torch.utils.data.DataLoader):
 
 class VisionData(torch.utils.data.DataLoader):
 
-    def __init__(self, dataset_path, norm=False, recalc_norm=False, resize=(130,100)):
+    def __init__(self, dataset_path, norm=False, recalc_norm=False, resize=(130,100), classes = [15,17,18]):
         #Norm handled in model
         self.norm = norm
         self.dataset_path = dataset_path
         self.resize = resize
+        self.classes = classes
 
         self.ids = [x for x in os.listdir(self.dataset_path) if x.endswith('.csv') and bool(re.search('player00',x, flags=re.I))]
         self.ids.sort()
@@ -67,8 +68,8 @@ class VisionData(torch.utils.data.DataLoader):
             with open(os.path.join(self.dataset_path, i)) as file_obj:
                 reader = csv.reader(file_obj, delimiter=',')
                 for ix, row in enumerate(reader):
-                    if ix != 0:
-                        break
+                    # if ix != 0:
+                    #     break
                     data.append((i[:-4], np.array([ast.literal_eval(x) if x.lower() != 'false' and x.lower() != 'true' else bool(ast.literal_eval(x)) for x in row])))
         self.data = data
         if recalc_norm:
@@ -87,6 +88,7 @@ class VisionData(torch.utils.data.DataLoader):
         return len(self.data)
 
     def __getitem__(self, idx):
+
         image = self.data[idx][0] + '.png'
         targets = self.data[idx][1:]
         img = Image.open(os.path.join(self.dataset_path, image))
@@ -96,29 +98,29 @@ class VisionData(torch.utils.data.DataLoader):
         else:
             image_to_tensor = transforms.ToTensor()
         img = image_to_tensor(img)
-        # print(img.shape)
-        bb_target = np.zeros(img.shape[1:])
-        # print(bb_target.shape)
+        target_shape = img.shape[1:]
+
         #Get Bounding Box Data
+        
         bb_data = self.data[idx][0] + '.txt'
-        # print(bb_data)
-        # print(self.ids)
-        # print(os.listdir(self.dataset_path))
+        x = [len(self.classes)]
+        x.extend(img.shape[1:])
+        bb_target = torch.zeros(x)
         if bb_data in os.listdir(self.dataset_path):
-            # print(True)
+            data = []
             with open(os.path.join(self.dataset_path, bb_data)) as file_obj:
                 reader = csv.reader(file_obj, delimiter=' ')
                 for ix, row in enumerate(reader):
-                    if ix != 0:
-                        break
-                    data = [float(x) for x in row]
-            # print(data)
-            bb_target = draw_data(bb_target, data)
+                    data.append([float(x) for x in row])
+            for d in data:
+                index = self.classes.index(d[0])
+                bb_target[index] = draw_data(target_shape, d)
 
-        return (img, torch.tensor(targets, dtype=torch.float), torch.tensor(bb_target, dtype=torch.float)[None,:,:])
+        return (img, torch.tensor(targets, dtype=torch.float), bb_target)
 
-def draw_data(mat, yolo, min_val=5):
-    mat_y, mat_x = mat.shape
+def draw_data(mat_shape, yolo, min_val=5):
+    mat = np.zeros(mat_shape)
+    mat_y, mat_x = mat_shape
     x = int(yolo[1] * mat_x)
     y = int(yolo[2] * mat_y)
     w = int(yolo[3] * mat_x) if int(yolo[3] * mat_x) > min_val else min_val 
@@ -130,7 +132,7 @@ def draw_data(mat, yolo, min_val=5):
     # overlay_crop = mat[int(max(y-(h/2), 0)) : int(min(y+(h/2), mat_y)), int(max(x-(w/2), 0)) : int(min(x+(w/2), mat_x))].shape
     # overlay = overlay[:overlay_crop[0], :overlay_crop[1]]
     mat[int(max(y-(h/2), 0)) : int(min(y+(h/2), mat_y)), int(max(x-(w/2), 0)) : int(min(x+(w/2), mat_x))] = 1.0
-    return mat
+    return torch.tensor(mat, dtype=torch.float)
 
 def load_data(path_to_data, batch_size=64):
     d = AgentData(path_to_data)

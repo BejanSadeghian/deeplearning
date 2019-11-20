@@ -29,27 +29,24 @@ def train(args):
 
     #Sample image
     train_dataset = VisionData(args.train_path)
-    # image_id = np.random.randint(300,700)
     sample_image0 = train_dataset[394]
-    # image_id = np.random.randint(700,900)
     sample_image1 = train_dataset[423]
-    # image_id = np.random.randint(200,300)
     sample_image2 = train_dataset[473]
 
 
     #Valid images
     image_to_tensor = transforms.ToTensor()
-
+    image_target_size = (130,100)
     img = Image.open(os.path.join(args.train_path, 'player02_00195.png'))
-    img = img.resize((130,100)) #Resize image
+    img = img.resize(image_target_size)
     valid_image0 = image_to_tensor(img)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00254.png'))
-    img = img.resize((130,100)) #Resize image
+    img = img.resize(image_target_size)
     valid_image1 = image_to_tensor(img)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00627.png'))
-    img = img.resize((130,100)) #Resize image
+    img = img.resize(image_target_size)
     valid_image2 = image_to_tensor(img)
 
     if args.logdir is not None:
@@ -128,7 +125,6 @@ def train(args):
         train_logger.add_image('Original1_valid',im.cpu(), global_step=e)
         train_logger.add_image('Heatmap1_valid',heatmap.cpu(), global_step=e)
         train_logger.add_image('Heatmap_Sigmoid1_valid',torch.sigmoid(heatmap.cpu()), global_step=e)
-
 
         save_model(model)
 
