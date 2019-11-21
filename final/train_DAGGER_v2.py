@@ -36,16 +36,17 @@ def rollout(device, vision, action, n_steps=200):
     k.step()
     try:
         data = []
-        img = torch.tensor(np.array(k.render_data[0].image), dtype=torch.float).to(device).permute(2,0,1)
-        heatmap = vision(img)
-        p = action(torch.sigmoid(heatmap))[0]
-        # print(p[0])
-        k.step(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
-        # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
-        la = k.last_action[0]
-        # print((la.acceleration, la.steer, la.brake))
-        # print('end')
-        data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
+        for n in range(n_steps):
+            img = torch.tensor(np.array(k.render_data[0].image), dtype=torch.float).to(device).permute(2,0,1)
+            heatmap = vision(img)
+            p = action(torch.sigmoid(heatmap))[0]
+            # print(p[0])
+            k.step(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
+            # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
+            la = k.last_action[0]
+            # print((la.acceleration, la.steer, la.brake))
+            # print('end')
+            data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
     finally:
         k.stop()
         del k
@@ -92,11 +93,11 @@ def train(args):
         all_predictions = []
 
         # state = pystk.WorldState()
-        print('a')
+        # print('a')
         train_data = rollout(device, vision_model, model, 200)
         
         np.random.shuffle(train_data)
-        print(train_data)
+        # print(train_data)
         for iteration in range(0, len(train_data)-batch_size+1, batch_size):
             # print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
             print(iteration)
