@@ -107,7 +107,7 @@ def save_model(model, name='vision'):
     raise ValueError("model type '%s' not supported!"%str(type(model)))
 
 
-def load_model(name='vision'):
+def load_vision_model(name='vision'):
     from torch import load
     from os import path
     r = Vision()

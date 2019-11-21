@@ -59,7 +59,7 @@ class Vision(torch.nn.Module):
         for l in reversed(layers[:-2]):
             self.upnetwork.append(self.upconv_block(c * 2, l, 2, 3, 1)) # x2 input because of skip
             c = l
-        self.classifier = torch.nn.Conv2d(c,1, kernel_size=1)
+        self.classifier = torch.nn.Conv2d(c, 3, kernel_size=1)
         # self.classifier = torch.nn.Linear(c, 3)
         
 
@@ -72,7 +72,7 @@ class Vision(torch.nn.Module):
         """
         ##Add preprocessing
         if self.inference:
-            # x = x.squeeze()
+            x = x.squeeze()
             if len(x.shape) == 4:
                 images = []
                 for i in x:
@@ -83,6 +83,7 @@ class Vision(torch.nn.Module):
             else:
                 img = transforms.functional.to_pil_image(x)
                 x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
+                x = x[None]
 
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        

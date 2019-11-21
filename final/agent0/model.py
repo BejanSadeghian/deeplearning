@@ -72,7 +72,7 @@ class Action(torch.nn.Module):
 
         if self.inference:
             x = x.squeeze()
-            # print(x.shape)
+            # print('forward',x.shape)
             if len(x.shape) == 4:
                 images = []
                 for i in x:
@@ -84,7 +84,7 @@ class Action(torch.nn.Module):
             else:
                 img = transforms.functional.to_pil_image(x)
                 x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
-
+        # print('forward', x.shape)
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        
         

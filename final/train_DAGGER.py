@@ -6,7 +6,7 @@ import numpy as np
 import pystk
 from agent0.player import HockeyPlayer
 from agent0.model import Action, save_model
-from vision_model import Vision, load_model
+from agent0.vision_model import Vision, load_vision_model
 
 # from utils import load_data
 
@@ -31,7 +31,8 @@ def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print('Device:',device)
     model = Action(normalize=True, inference=False).to(device)
-    vision_model = load_model('vision') #Vision().to(device)
+    model.train(True)
+    vision_model = load_vision_model('vision') #Vision().to(device)
     vision_model.train(False)
 
     loss = torch.nn.MSELoss()
@@ -56,7 +57,7 @@ def train(args):
     # o = Player(HockeyPlayer(1)) #TODO: change the code to use the agent to make deecisions but also update with eaech epoch
     # race_config.players.append(o.config)
     i=0
-    o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = int((i+1)%2.0))
+    o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)#int((i+1)%2.0))
     race_config.players.append(o)
 
     global_step = 0

@@ -45,7 +45,7 @@ class HockeyPlayer:
         img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
         # print(img.shape)
         heatmap = self.vision(img)
-        decision = self.agent(heatmap).detach().numpy()[0]
+        decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
         # print(decision)
         steer, acceleration, brake = decision
         action['steer'] = steer
