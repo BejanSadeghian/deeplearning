@@ -84,8 +84,7 @@ class Vision(torch.nn.Module):
             else:
                 img = transforms.functional.to_pil_image(x.cpu())
                 x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
-                x = x[None]
-            x.to(device)
+                x = x[None].to(device)
 
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        
