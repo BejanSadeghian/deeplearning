@@ -102,7 +102,7 @@ def train(args):
                 l.backward()
                 optimizer.step()
 
-                all_targets.append(a.numpy())
+                all_targets.append(a.detach().cpu().numpy())
                 all_predictions.append(p.squeeze().detach().cpu().numpy())
                 # print(all_predictions)
                 train_logger.add_scalar('loss', l.cpu(), global_step=global_step)
