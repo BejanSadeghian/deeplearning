@@ -107,7 +107,7 @@ def train(args):
 
             heatmap = vision_model(batch_data.to(device))
             p = model(torch.sigmoid(heatmap))
-            print(p)
+            # print(p)
             l = loss(p, batch_label.to(device))
 
             optimizer.zero_grad()
