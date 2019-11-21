@@ -33,6 +33,7 @@ def train(args):
     model = Action(normalize=True, inference=False).to(device)
     model.train(True)
     vision_model = load_vision_model('vision') #Vision().to(device)
+    vision_model.to(device)
     vision_model.train(False)
 
     loss = torch.nn.MSELoss()
