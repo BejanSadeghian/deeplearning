@@ -78,7 +78,7 @@ class Vision(torch.nn.Module):
             if len(x.shape) == 4:
                 images = []
                 for i in x:
-                    img = transforms.functional.to_pil_image(i)
+                    img = transforms.functional.to_pil_image(i.cpu())
                     x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
                     images.append(x[None])
                 x = torch.cat(images)
