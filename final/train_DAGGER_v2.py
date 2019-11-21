@@ -45,7 +45,6 @@ def rollout(device, vision, action, n_steps=200):
         la = k.last_action[0]
         # print((la.acceleration, la.steer, la.brake))
         # print('end')
-        # a = torch.tensor((la.steer, la.acceleration, la.brake), dtype=torch.float)
         data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
     finally:
         k.stop()
@@ -96,13 +95,14 @@ def train(args):
         train_data = rollout(device, vision_model, model, 200)
         np.random.shuffle(train_data)
         for t in range(0, len(train_data)-batch_size+1, batch_size):
-            print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
+            # print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
 
             batch_data = torch.as_tensor([train_data[i][0] for i in range(iteration, iteration+batch_size)]).permute(0,3,1,2).float()
             batch_label = torch.as_tensor([train_data[i][1] for i in range(iteration, iteration+batch_size)]).float()
 
             heatmap = vision_model(batch_data.to(device))
             p = model(torch.sigmoid(heatmap))
+            print(p)
             l = loss(p, batch_label.to(device))
 
             optimizer.zero_grad()
