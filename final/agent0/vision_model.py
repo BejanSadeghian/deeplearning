@@ -72,6 +72,8 @@ class Vision(torch.nn.Module):
         """
         ##Add preprocessing
         if self.inference:
+            device = x.device
+            x.to(torch.device('cpu'))
             x = x.squeeze()
             if len(x.shape) == 4:
                 images = []
@@ -84,6 +86,7 @@ class Vision(torch.nn.Module):
                 img = transforms.functional.to_pil_image(x)
                 x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
                 x = x[None]
+            x.to(device)
 
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        
