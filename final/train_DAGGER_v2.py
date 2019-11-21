@@ -92,7 +92,9 @@ def train(args):
         all_predictions = []
 
         # state = pystk.WorldState()
+        print('a')
         train_data = rollout(device, vision_model, model, 200)
+        print('b')
         np.random.shuffle(train_data)
         for iteration in range(0, len(train_data)-batch_size+1, batch_size):
             # print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
