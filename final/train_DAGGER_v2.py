@@ -134,7 +134,7 @@ def train(args):
             batch_data = torch.as_tensor([train_data[i][0] for i in range(iteration, iteration+batch_size)]).permute(0,3,1,2).float()
             batch_label = torch.as_tensor([train_data[i][1] for i in range(iteration, iteration+batch_size)]).float()
 
-            heatmap = vision_model(batch_data.to(device))
+            # heatmap = vision_model(batch_data.to(device))
             # p = model(torch.sigmoid(heatmap))
             p = model(batch_data.to(device))
             # print(p)
