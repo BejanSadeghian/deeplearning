@@ -42,7 +42,7 @@ def rollout_agent(device, vision, action, n_steps=200):
             heatmap = vision(img)
             p = action(torch.sigmoid(heatmap))[0]
             # print(p[0])
-            k.step(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
+            k.step(pystk.Action(steer=float(p[0]), acceleration=float(p[1]), brake=float(p[2])>0.5))
             # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
             la = k.last_action[0]
             # print((la.acceleration, la.steer, la.brake))
