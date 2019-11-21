@@ -94,7 +94,7 @@ def train(args):
         # state = pystk.WorldState()
         train_data = rollout(device, vision_model, model, 200)
         np.random.shuffle(train_data)
-        for t in range(0, len(train_data)-batch_size+1, batch_size):
+        for iteration in range(0, len(train_data)-batch_size+1, batch_size):
             # print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
 
             batch_data = torch.as_tensor([train_data[i][0] for i in range(iteration, iteration+batch_size)]).permute(0,3,1,2).float()
