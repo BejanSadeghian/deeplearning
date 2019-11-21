@@ -96,6 +96,7 @@ def train(args):
         np.random.shuffle(train_data)
         for iteration in range(0, len(train_data)-batch_size+1, batch_size):
             # print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
+            print(iteration)
 
             batch_data = torch.as_tensor([train_data[i][0] for i in range(iteration, iteration+batch_size)]).permute(0,3,1,2).float()
             batch_label = torch.as_tensor([train_data[i][1] for i in range(iteration, iteration+batch_size)]).float()
