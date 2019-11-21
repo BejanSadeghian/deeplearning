@@ -39,8 +39,9 @@ def rollout_agent(device, vision, action, n_steps=200):
         data = []
         for n in range(n_steps):
             img = torch.tensor(np.array(k.render_data[0].image), dtype=torch.float).to(device).permute(2,0,1)
-            heatmap = vision(img)
-            p = action(torch.sigmoid(heatmap))[0]
+            # heatmap = vision(img)
+            # p = action(torch.sigmoid(heatmap))[0]
+            p = action(img)[0]
             # print(p[0])
             k.step(pystk.Action(steer=float(p[0]), acceleration=float(p[1]), brake=float(p[2])>0.5))
             # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
@@ -64,15 +65,9 @@ def rollout(device, vision, action, n_steps=200):
     try:
         data = []
         for n in range(n_steps):
-            img = torch.tensor(np.array(k.render_data[0].image), dtype=torch.float).to(device).permute(2,0,1)
-            heatmap = vision(img)
-            p = action(torch.sigmoid(heatmap))[0]
-            # print(p[0])
             k.step()
-            # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
             la = k.last_action[0]
-            # print((la.acceleration, la.steer, la.brake))
-            # print('end')
+
             data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
     finally:
         k.stop()
