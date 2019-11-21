@@ -73,7 +73,7 @@ class Vision(torch.nn.Module):
         ##Add preprocessing
         if self.inference:
             device = x.device
-            x.to(torch.device('cpu'))
+            x.cpu()
             x = x.squeeze()
             if len(x.shape) == 4:
                 images = []
