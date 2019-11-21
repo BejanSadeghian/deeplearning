@@ -88,7 +88,7 @@ def train(args):
     vision_model.to(device)
     vision_model.train(False)
 
-    loss = torch.nn.MSELoss()
+    loss = torch.nn.L1Loss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     batch_size = args.batch_size
@@ -135,7 +135,8 @@ def train(args):
             batch_label = torch.as_tensor([train_data[i][1] for i in range(iteration, iteration+batch_size)]).float()
 
             heatmap = vision_model(batch_data.to(device))
-            p = model(torch.sigmoid(heatmap))
+            # p = model(torch.sigmoid(heatmap))
+            p = model(batch_data.to(device))
             # print(p)
             l = loss(p, batch_label.to(device))
 
