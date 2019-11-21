@@ -80,7 +80,7 @@ class Vision(torch.nn.Module):
                 for i in x:
                     img = transforms.functional.to_pil_image(i.cpu())
                     x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
-                    images.append(x[None])
+                    images.append(x[None].to(device))
                 x = torch.cat(images)
             else:
                 img = transforms.functional.to_pil_image(x)
