@@ -133,7 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--max_steps', type=int, default=1000)
     parser.add_argument('--log_suffix', type=str, default='')
-    parser.add_argument('--learning_rate', type=float, default=1e-3)
+    parser.add_argument('--learning_rate', type=float, default=1e-4)
 
     args = parser.parse_args()
     train(args)
