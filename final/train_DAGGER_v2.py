@@ -7,6 +7,7 @@ import pystk
 from agent0.player import HockeyPlayer
 from agent0.model import Action, save_model
 from agent0.vision_model import Vision, load_vision_model
+import itertools
 
 # from utils import load_data
 
@@ -28,7 +29,7 @@ def getRMSE(list_preds, list_targets, idx):
     return np.sqrt(((predicted - targets)**2).mean())
 
 
-def rollout(device, vision, action, n_steps=200):
+def rollout_agent(device, vision, action, n_steps=200):
     race_config = pystk.RaceConfig(num_kart=1, track='icy_soccer_field', mode=pystk.RaceConfig.RaceMode.SOCCER)
 
     k = pystk.Race(race_config)
@@ -52,6 +53,31 @@ def rollout(device, vision, action, n_steps=200):
         del k
     return data
 
+def rollout(device, vision, action, n_steps=200):
+    race_config = pystk.RaceConfig(num_kart=1, track='icy_soccer_field', mode=pystk.RaceConfig.RaceMode.SOCCER)
+    o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)#int((i+1)%2.0))
+    race_config.players.append(o)
+    k = pystk.Race(race_config)
+    
+    k.start()
+    k.step()
+    try:
+        data = []
+        for n in range(n_steps):
+            img = torch.tensor(np.array(k.render_data[0].image), dtype=torch.float).to(device).permute(2,0,1)
+            heatmap = vision(img)
+            p = action(torch.sigmoid(heatmap))[0]
+            # print(p[0])
+            k.step()
+            # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
+            la = k.last_action[0]
+            # print((la.acceleration, la.steer, la.brake))
+            # print('end')
+            data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
+    finally:
+        k.stop()
+        del k
+    return data
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -87,6 +113,7 @@ def train(args):
     # o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)#int((i+1)%2.0))
     # race_config.players.append(o)
 
+    train_data = list(itertools.chain(*[rollout(device, vision_model, model) for it in range(10)]))
     global_step = 0
     for e in range(args.epochs):
         all_targets = []
@@ -94,13 +121,15 @@ def train(args):
 
         # state = pystk.WorldState()
         # print('a')
-        train_data = rollout(device, vision_model, model, 200)
+
+        if e > 1:
+            train_data.extend(rollout_agent(device, vision_model, model))
         
         np.random.shuffle(train_data)
         # print(train_data)
         for iteration in range(0, len(train_data)-batch_size+1, batch_size):
-            # print('\rEpoch: {} Step: {} of {}'.format(e,t,max_steps), end='\r')
-            print(iteration)
+            print('\rEpoch: {} Step: {} of {}'.format(e,iteration//batch_size,batch_size), end='\r')
+            # print(iteration)
 
             batch_data = torch.as_tensor([train_data[i][0] for i in range(iteration, iteration+batch_size)]).permute(0,3,1,2).float()
             batch_label = torch.as_tensor([train_data[i][1] for i in range(iteration, iteration+batch_size)]).float()

@@ -46,10 +46,10 @@ class HockeyPlayer:
         # print(img.shape)
         heatmap = self.vision(img)
         decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
-        # print(decision)
-        steer, acceleration, brake = decision
-        action['steer'] = steer
+        print(decision)
+        acceleration, steer, brake = decision
         action['acceleration'] = acceleration
+        action['steer'] = steer
         action['brake'] = False if brake < 0.5 else True
 
         return action
