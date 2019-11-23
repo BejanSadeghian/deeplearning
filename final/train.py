@@ -44,8 +44,8 @@ def train(args):
 
             heatmaps = vision_model(images)
             combined_images = torch.cat((images, heatmaps), 1)
-            print('shapes')
-            print(combined_images.shape, images.shape, heatmaps.shape)
+            # print('shapes')
+            # print(combined_images.shape, images.shape, heatmaps.shape)
             pred = model(combined_images)
             all_predictions.append(pred.cpu().detach().numpy())
             l = loss(pred, labels.squeeze())
