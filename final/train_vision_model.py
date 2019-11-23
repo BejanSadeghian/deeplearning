@@ -40,7 +40,7 @@ def train(args):
     img = Image.open(os.path.join(args.train_path, 'player02_00195.png'))
     img = img.resize(image_target_size)
     valid_image0 = image_to_tensor(img)
-    print(valid_image0.shape)
+    # print(valid_image0.shape)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00254.png'))
     img = img.resize(image_target_size)
@@ -78,6 +78,7 @@ def train(args):
         # train_logger.add_scalar('RMSE_steer', getRMSE(all_predictions, all_targets, 0),global_step=e)
         # train_logger.add_scalar('RMSE_acceleration', getRMSE(all_predictions, all_targets, 1),global_step=e)
         # train_logger.add_scalar('RMSE_brake', getRMSE(all_predictions, all_targets, 2),global_step=e)
+        model.eval()
         sample = sample_image0[0].to(device)
         im = sample_image0[0].unsqueeze(0)
         heatmap = model(im.to(device))
