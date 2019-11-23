@@ -34,7 +34,7 @@ class Vision(torch.nn.Module):
         def forward(self, x, output_pad=False):
             return F.relu(self.upsample(x))
             
-    def __init__(self, layers=[32,32,64,64,128,128], normalize=False, inference=True):
+    def __init__(self, layers=[32,32,64,64,128,128], normalize=True, inference=True):
         super().__init__()
 
         """

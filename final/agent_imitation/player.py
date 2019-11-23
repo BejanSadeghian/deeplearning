@@ -46,6 +46,7 @@ class HockeyPlayer:
         """
         Your code here.
         """
+        print(image.shape)
         img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
         # print(img.shape)
         heatmap = self.vision(img)
