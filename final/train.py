@@ -46,7 +46,7 @@ def train(args):
             # print(heatmaps)
             combined_images = torch.cat((reshaped_images, heatmaps), 1)
             # print('shapes')
-            print(combined_images.shape)
+            # print(combined_images.shape)
             # print(combined_images.shape, images.shape, heatmaps.shape)
             pred = model(combined_images)
             all_predictions.append(pred.cpu().detach().numpy())
