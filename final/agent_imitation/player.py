@@ -64,7 +64,7 @@ class HockeyPlayer:
         self.counter += 1
         # decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
         # print(resized_image.shape, heatmap.shape)
-        combined_image = torch.cat((resized_image, heatmap),1)
+        combined_image = torch.cat((resized_image, torch.sigmoid(heatmap)),1)
         decision = self.agent(combined_image)[0]#.detach().numpy()[0]
         # print(row)
         steer, acceleration, brake = decision

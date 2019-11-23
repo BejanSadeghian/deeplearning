@@ -4,23 +4,10 @@ import argparse
 import os
 import numpy as np
 import pystk
-from agent0.player import HockeyPlayer
-from agent0.model import Action, save_model
-from agent0.vision_model import Vision, load_vision_model
+from agent_dagger.player import HockeyPlayer
+from agent_dagger.model import Action, save_model
+from agent_dagger.vision_model import Vision, load_vision_model
 
-# from utils import load_data
-
-class Player:
-    def __init__(self, player, team=0):
-        self.player = player
-        self.team = team
-
-    @property
-    def config(self):
-        return pystk.PlayerConfig(controller=pystk.PlayerConfig.Controller.PLAYER_CONTROL, kart=self.player.kart, team=self.team)
-    
-    def __call__(self, image, player_info):
-        return self.player.act(image, player_info)
 
 def getRMSE(list_preds, list_targets, idx):
     predicted = np.array([x[idx] for x in list_preds])

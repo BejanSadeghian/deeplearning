@@ -16,7 +16,7 @@ def getRMSE(list_preds, list_targets, idx):
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print('Device:',device)
-    model = Action(normalize=True, inference=False).to(device)
+    model = Action(normalize=True, inference=False).to(device) #Left infeerence to falsee because we are resizing in the vision model
     model.train(True)
     vision_model = load_vision_model()
     vision_model.to(device)
@@ -44,7 +44,7 @@ def train(args):
             # print(images.shape)
             heatmaps, reshaped_images = vision_model(images)
             # print(heatmaps)
-            combined_images = torch.cat((reshaped_images, heatmaps), 1)
+            combined_images = torch.cat((reshaped_images, torch.sigmoid(heatmaps)), 1)
             # print('shapes')
             # print(combined_images.shape)
             # print(combined_images.shape, images.shape, heatmaps.shape)

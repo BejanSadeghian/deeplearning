@@ -70,7 +70,7 @@ class Action(torch.nn.Module):
         return (B,2)
         """
 
-        if self.inference and False: #Teesting removal
+        if self.inference and False: #Testing removal
             x = x.squeeze()
             # print('forward',x.shape)
             if len(x.shape) == 4:
