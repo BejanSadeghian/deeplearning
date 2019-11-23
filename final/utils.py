@@ -92,7 +92,7 @@ class VisionData(torch.utils.data.DataLoader):
         image = self.data[idx][0] + '.png'
         targets = self.data[idx][1:]
         img = Image.open(os.path.join(self.dataset_path, image))
-        img = img.resize(self.resize) #Resize image
+        # img = img.resize(self.resize) #Resize image
         if self.norm:
             image_to_tensor = transforms.Compose([transforms.ToTensor(), transforms.Normalize(self.mean, self.std)])
         else:
