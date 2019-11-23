@@ -18,7 +18,7 @@ def getRMSE(list_preds, list_targets, idx):
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print('Device:',device)
-    model = Vision(normalize=True, inference=True).to(device)
+    model = Vision(normalize=True, inference=False).to(device)
 
     # loss = torch.nn.MSELoss()
     loss = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([10]))
@@ -36,17 +36,17 @@ def train(args):
 
     #Valid images
     image_to_tensor = transforms.ToTensor()
-    # image_target_size = (130,100)
+    image_target_size = (130,100)
     img = Image.open(os.path.join(args.train_path, 'player02_00195.png'))
-    # img = img.resize(image_target_size)
+    img = img.resize(image_target_size)
     valid_image0 = image_to_tensor(img)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00254.png'))
-    # img = img.resize(image_target_size)
+    img = img.resize(image_target_size)
     valid_image1 = image_to_tensor(img)
 
     img = Image.open(os.path.join(args.train_path, 'player02_00627.png'))
-    # img = img.resize(image_target_size)
+    img = img.resize(image_target_size)
     valid_image2 = image_to_tensor(img)
 
     if args.logdir is not None:
