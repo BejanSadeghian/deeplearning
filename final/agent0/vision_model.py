@@ -88,7 +88,7 @@ class Vision(torch.nn.Module):
                 x = x[None].to(device)
 
         if self.normalize:
-            x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)        
+            x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device) 
         
         activations = []
         for i, layer in enumerate(self.network):

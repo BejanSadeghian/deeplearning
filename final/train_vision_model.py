@@ -46,7 +46,7 @@ def train(args):
     # img = img.resize(image_target_size)
     valid_image1 = image_to_tensor(img)
 
-    img = Image.open(os.path.join(args.train_path, 'player02_00627.png'))
+    img = Image.open('player50b.png') #player02_00627
     # img = img.resize(image_target_size)
     valid_image2 = image_to_tensor(img)
 

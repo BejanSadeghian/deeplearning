@@ -42,14 +42,14 @@ class Action(torch.nn.Module):
         """
         self.normalize = normalize
         self.inference = inference
-        self.mean = torch.tensor([8.9478, 8.9478, 8.9478], dtype=torch.float) 
-        self.std = torch.tensor([47.0021, 42.1596, 39.2562], dtype=torch.float)
+        self.mean = torch.tensor([8.9478, 8.9478, 8.9478,0,0,0], dtype=torch.float) #TODO: Remove the 1s later when not concat
+        self.std = torch.tensor([47.0021, 42.1596, 39.2562,1,1,1], dtype=torch.float) #TODO: Remove the 1s later when not concat
 
-        c = 3        
+        c = 6 #Testing the combined heatmap       
         self.network = torch.nn.ModuleList()
         for l in layers:
-            kernel_size = 7 if c == 3 else 3
-            stride = 1 if c == 3 else 2
+            kernel_size = 7 if c == 3 or c == 6 else 3
+            stride = 1 if c == 3 or c == 6  else 2
             self.network.append(self.conv_block(c, l, stride, kernel_size, 1))
             c = l
         

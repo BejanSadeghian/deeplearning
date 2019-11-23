@@ -4,6 +4,7 @@ import torch
 from torch.distributions.normal import Normal
 from PIL import Image
 from datetime import datetime
+from torchvision import transforms
 
 from .model import load_model, Action
 from .vision_model import load_vision_model, Vision
@@ -36,6 +37,7 @@ class HockeyPlayer:
         self.vision = load_vision_model(os.path.relpath('vision'))
         self.vision.eval()
         self.counter = 0
+        self.transformer = transforms.ToTensor()
         
     def act(self, image, player_info):
         """
@@ -48,16 +50,17 @@ class HockeyPlayer:
         """
         Your code here.
         """
-        print(image.shape)
-        img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
+        # print(image.shape)
+        img = self.transformer(image)
+        # image_orig = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
         # print(img.shape)
         heatmap = self.vision(img)
-        print(heatmap.squeeze(0).permute(1,2,0).shape)
-        save = 'agent_view_heatmap'
-        if not os.path.exists(save):
-                os.makedirs(save)
-        Image.fromarray(np.uint8(torch.sigmoid(heatmap.squeeze(0).permute(1,2,0)).detach().numpy()*255)).save(os.path.join(save, 'player{}a.png'.format(self.counter)))
-        Image.fromarray(np.uint8(img.squeeze(0).permute(1,2,0).detach().numpy())).save(os.path.join(save, 'player{}b.png'.format(self.counter)))
+        # print(heatmap.squeeze(0).permute(1,2,0).shape)
+        # save = 'agent_view_heatmap'
+        # if not os.path.exists(save):
+        #     os.makedirs(save)
+        # Image.fromarray(np.uint8(torch.sigmoid(heatmap.squeeze(0).permute(1,2,0)).detach().numpy()*255)).save(os.path.join(save, 'player{}a.png'.format(self.counter)))
+        # Image.fromarray(np.uint8(image_orig.squeeze(0).permute(1,2,0).detach().numpy())).save(os.path.join(save, 'player{}b.png'.format(self.counter)))
         self.counter += 1
         # decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
         decision = self.agent(img)[0]#.detach().numpy()[0]

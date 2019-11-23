@@ -6,6 +6,7 @@ import numpy as np
 
 from utils import load_data
 from agent_imitation.model import Action, save_model
+from agent_imitation.vision_model import Vision, load_vision_model
 
 def getRMSE(list_preds, list_targets, idx):
     predicted = np.array([x[idx] for x in list_preds])
@@ -16,6 +17,9 @@ def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print('Device:',device)
     model = Action(normalize=True, inference=False).to(device)
+    model.train(True)
+    vision_model = load_vision_model()
+    vision_model.train(False)
 
     loss = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -37,10 +41,14 @@ def train(args):
             labels = batch[1].to(device)
             all_targets.append(batch[1].cpu().numpy())
 
-            pred = model(images)
+            heatmaps = vision_model(images)
+            combined_images = torch.cat((images, heatmaps), 1)
+            print('shapes')
+            print(combined_images.shape, images.shape, heatmaps.shape)
+            pred = model(combined_images)
             all_predictions.append(pred.cpu().detach().numpy())
             l = loss(pred, labels.squeeze())
-            print(pred[0], labels.squeeze()[0])
+            # print(pred[0], labels.squeeze()[0])
 
             optimizer.zero_grad()
             l.backward()
