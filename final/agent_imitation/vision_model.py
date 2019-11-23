@@ -86,7 +86,7 @@ class Vision(torch.nn.Module):
                 img = transforms.functional.to_pil_image(x.cpu())
                 x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
                 x = x[None].to(device)
-
+        pass_through_x = x.clone()
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device) 
         
@@ -99,7 +99,7 @@ class Vision(torch.nn.Module):
         for i, layer in enumerate(self.upnetwork[1:]):
             x = torch.cat([z[:,:, :activations[-2-i].size(2), :activations[-2-i].size(3)], activations[-2-i]], dim=1)
             z = layer(x)
-        return self.classifier(z)
+        return (self.classifier(z), pass_through_x)
         # return self.classifier(z.mean([2,3]))
 
 def save_model(model, name='vision'):
