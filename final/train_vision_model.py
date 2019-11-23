@@ -8,7 +8,7 @@ from PIL import Image
 from torchvision import transforms
 
 from utils import load_data, load_vision_data, VisionData
-from vision_model import Vision, save_model
+from agent0.vision_model import Vision, save_model
 
 def getRMSE(list_preds, list_targets, idx):
     predicted = np.array([x[idx] for x in list_preds])

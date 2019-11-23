@@ -2,6 +2,8 @@ import os
 import numpy as np
 import torch
 from torch.distributions.normal import Normal
+from PIL import Image
+from datetime import datetime
 
 from .model import load_model, Action
 from .vision_model import load_vision_model, Vision
@@ -31,6 +33,7 @@ class HockeyPlayer:
         self.kart = all_players[np.random.choice(len(all_players))]
         self.agent = load_model(os.path.relpath('action'))
         self.vision = load_vision_model(os.path.relpath('vision'))
+        self.counter = 0
         
     def act(self, image, player_info):
         """
@@ -45,17 +48,24 @@ class HockeyPlayer:
         """
         img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
         # print(img.shape)
-        # heatmap = self.vision(img)
+        heatmap = self.vision(img)
+        print(heatmap.squeeze(0).permute(1,2,0).shape)
+        save = 'agent_view_heatmap'
+        if not os.path.exists(save):
+                os.makedirs(save)
+        Image.fromarray(np.uint8(torch.sigmoid(heatmap.squeeze(0).permute(1,2,0)).detach().numpy()*255)).save(os.path.join(save, 'player{}a.png'.format(self.counter)))
+        Image.fromarray(np.uint8(img.squeeze(0).permute(1,2,0).detach().numpy())).save(os.path.join(save, 'player{}b.png'.format(self.counter)))
+        self.counter += 1
         # decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
-        row = self.agent(img)[0]#.detach().numpy()[0]
+        decision = self.agent(img)[0]#.detach().numpy()[0]
         # print(row)
-        # steer, acceleration, brake = decision
-        steer_dist = Normal(row[0],torch.abs(row[1])+0.001) #make sure sigma is positive and non-zero
-        acc_dist = Normal(row[2],torch.abs(row[3])+0.001) #make sure sigma is positive and non-zero
-        brake_dist = Normal(row[4],torch.abs(row[5])+0.001) #make sure sigma is positive and non-zero
-        steer = steer_dist.sample()
-        acceleration = acc_dist.sample()
-        brake = brake_dist.sample()
+        steer, acceleration, brake = decision
+        # steer_dist = Normal(row[0],torch.abs(row[1])+0.001) #make sure sigma is positive and non-zero
+        # acc_dist = Normal(row[2],torch.abs(row[3])+0.001) #make sure sigma is positive and non-zero
+        # brake_dist = Normal(row[4],torch.abs(row[5])+0.001) #make sure sigma is positive and non-zero
+        # steer = steer_dist.sample()
+        # acceleration = acc_dist.sample()
+        # brake = brake_dist.sample()
         print(steer,  acceleration, brake)
         action['steer'] = steer
         action['acceleration'] = acceleration
