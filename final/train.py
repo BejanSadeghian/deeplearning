@@ -40,7 +40,7 @@ def train(args):
             pred = model(images)
             all_predictions.append(pred.cpu().detach().numpy())
             l = loss(pred, labels.squeeze())
-            print(pred, labels.squeeze())
+            print(pred[0], labels.squeeze()[0])
 
             optimizer.zero_grad()
             l.backward()
