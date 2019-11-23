@@ -32,7 +32,9 @@ class HockeyPlayer:
         all_players = ['adiumy', 'amanda', 'beastie', 'emule', 'gavroche', 'gnu', 'hexley', 'kiki', 'konqi', 'nolok', 'pidgin', 'puffy', 'sara_the_racer', 'sara_the_wizard', 'suzanne', 'tux', 'wilber', 'xue']
         self.kart = all_players[np.random.choice(len(all_players))]
         self.agent = load_model(os.path.relpath('action'))
+        self.agent.eval()
         self.vision = load_vision_model(os.path.relpath('vision'))
+        self.vision.eval()
         self.counter = 0
         
     def act(self, image, player_info):

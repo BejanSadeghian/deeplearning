@@ -56,6 +56,7 @@ def train(args):
 
     global_step = 0
     for e in range(args.epochs):
+        model.train()
         print('Epoch:',e)
         # all_targets = []
         # all_predictions = []
