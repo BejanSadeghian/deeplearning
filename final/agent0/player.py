@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import torch
+from torch.distributions.normal import Normal
 
 from .model import load_model, Action
 from .vision_model import load_vision_model, Vision
@@ -44,10 +45,18 @@ class HockeyPlayer:
         """
         img = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
         # print(img.shape)
-        heatmap = self.vision(img)
-        decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
-        print(decision)
-        steer, acceleration, brake = decision
+        # heatmap = self.vision(img)
+        # decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
+        row = self.agent(img)[0]#.detach().numpy()[0]
+        # print(row)
+        # steer, acceleration, brake = decision
+        steer_dist = Normal(row[0],torch.abs(row[1])+0.001) #make sure sigma is positive and non-zero
+        acc_dist = Normal(row[2],torch.abs(row[3])+0.001) #make sure sigma is positive and non-zero
+        brake_dist = Normal(row[4],torch.abs(row[5])+0.001) #make sure sigma is positive and non-zero
+        steer = steer_dist.sample()
+        acceleration = acc_dist.sample()
+        brake = brake_dist.sample()
+        print(steer,  acceleration, brake)
         action['steer'] = steer
         action['acceleration'] = acceleration
         action['brake'] = False if brake < 0.5 else True

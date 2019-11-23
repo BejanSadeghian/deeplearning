@@ -59,7 +59,7 @@ class Action(torch.nn.Module):
         for l in reversed(layers[:-2]):
             self.upnetwork.append(self.upconv_block(c * 2, l, 2, 3, 1)) # x2 input because of skip
             c = l
-        self.classifier = torch.nn.Linear(c, 3)
+        self.classifier = torch.nn.Linear(c, 6)
         
 
     def forward(self, x):

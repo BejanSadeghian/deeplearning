@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 from utils import load_data
-from model import Action, save_model
+from agent_imitation.model import Action, save_model
 
 def getRMSE(list_preds, list_targets, idx):
     predicted = np.array([x[idx] for x in list_preds])
@@ -21,7 +21,7 @@ def train(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     train_data = load_data(args.train_path, batch_size=args.batch_size)
-    valid_data = load_data(args.valid_path, batch_size=args.batch_size)
+    # valid_data = load_data(args.valid_path, batch_size=args.batch_size)
 
     if args.logdir is not None:
         train_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'train_{}'.format(args.log_suffix)), flush_secs=1)

@@ -8,7 +8,7 @@ from agent0.player import HockeyPlayer
 from agent0.model import Action, save_model
 from agent0.vision_model import Vision, load_vision_model
 import itertools
-
+from torch.distributions.normal import Normal
 # from utils import load_data
 
 class Player:
@@ -34,7 +34,8 @@ def rollout_agent(device, vision, action, n_steps=200):
 
     k = pystk.Race(race_config)
     k.start()
-    k.step()
+    for i in range(5): #Skip the first 5 steps since its the game starting
+        k.step() 
     try:
         data = []
         for n in range(n_steps):
@@ -43,12 +44,12 @@ def rollout_agent(device, vision, action, n_steps=200):
             # p = action(torch.sigmoid(heatmap))[0]
             p = action(img)[0]
             # print(p[0])
-            k.step(pystk.Action(steer=float(p[0]), acceleration=float(p[1]), brake=float(p[2])>0.5))
+            k.step(pystk.Action(steer=float(p[0]), acceleration=float(p[1]), brake=float(p[2])>0.5)) #TODO: remove /10 later
             # print(pystk.Action(acceleration=float(p[0]), steer=float(p[1]), brake=float(p[2])>0.5))
             la = k.last_action[0]
             # print((la.acceleration, la.steer, la.brake))
             # print('end')
-            data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
+            data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake))) #TODO: remove /10 later
     finally:
         k.stop()
         del k
@@ -56,19 +57,20 @@ def rollout_agent(device, vision, action, n_steps=200):
 
 def rollout(device, vision, action, n_steps=200):
     race_config = pystk.RaceConfig(num_kart=1, track='icy_soccer_field', mode=pystk.RaceConfig.RaceMode.SOCCER)
-    o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)#int((i+1)%2.0))
+    o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)
     race_config.players.append(o)
     k = pystk.Race(race_config)
     
     k.start()
-    k.step()
+    for i in range(5): #Skip the first 5 steps since its the game starting
+        k.step() 
     try:
         data = []
         for n in range(n_steps):
             k.step()
             la = k.last_action[0]
 
-            data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake)))
+            data.append((np.array(k.render_data[0].image), (la.steer, la.acceleration, la.brake))) #TODO: remove /10 later 3 in this script and 1 in player
     finally:
         k.stop()
         del k
@@ -84,13 +86,12 @@ def train(args):
     vision_model.train(False)
 
     loss = torch.nn.L1Loss()
+    loss.requires_grad = True
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     batch_size = args.batch_size
     max_steps = args.max_steps
     num_players = 1
-    # train_data = load_data(args.train_path, batch_size=args.batch_size)
-    # valid_data = load_data(args.valid_path, batch_size=args.batch_size)
 
     if args.logdir is not None:
         train_logger = tb.SummaryWriter(log_dir=os.path.join(args.logdir, 'train_{}'.format(args.log_suffix)), flush_secs=1)  
@@ -100,13 +101,6 @@ def train(args):
     config.screen_width = 400
     config.screen_height = 300
     pystk.init(config)
-
-    # for i in range(num_players):
-    # o = Player(HockeyPlayer(1)) #TODO: change the code to use the agent to make deecisions but also update with eaech epoch
-    # race_config.players.append(o.config)
-    i=0
-    # o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.AI_CONTROL, team = 0)#int((i+1)%2.0))
-    # race_config.players.append(o)
 
     train_data = list(itertools.chain(*[rollout(device, vision_model, model) for it in range(10)]))
     global_step = 0
@@ -132,21 +126,48 @@ def train(args):
             # heatmap = vision_model(batch_data.to(device))
             # p = model(torch.sigmoid(heatmap))
             p = model(batch_data.to(device))
-            # print(p)
-            l = loss(p, batch_label.to(device))
-
+            
+            samples = []
+            log_probs = []
+            for row in p:
+                steer_dist = Normal(row[0],torch.abs(row[1])+0.001) #make sure sigma is positive and non-zero
+                acc_dist = Normal(row[2],torch.abs(row[3])+0.001) #make sure sigma is positive and non-zero
+                brake_dist = Normal(row[4],torch.abs(row[5])+0.001) #make sure sigma is positive and non-zero
+                steer = steer_dist.sample()
+                acc = acc_dist.sample()
+                brake = brake_dist.sample()
+                s = torch.tensor([steer, acc, brake], dtype=torch.float, requires_grad=True)
+                samples.append(s)
+                lp = torch.tensor([
+                    -steer_dist.log_prob(steer),
+                    -acc_dist.log_prob(acc),
+                    -brake_dist.log_prob(brake)
+                ], requires_grad=True)
+                log_probs.append(lp)
+            samples = torch.stack(samples)
+            log_probs = torch.stack(log_probs)
+            # print(samples)
+            # print(batch_label.to(device))
+            # print(log_probs)
+            # l = loss(samples, batch_label.to(device))
+            # print(torch.abs(samples - batch_label.to(device)))
+            # input()
+            l = (log_probs.cpu() * torch.abs(samples.cpu() - batch_label.cpu())).sum()
+            print(l)
             optimizer.zero_grad()
             l.backward()
             optimizer.step()
 
             all_targets.append(batch_label.detach().cpu().numpy())
             all_predictions.append(p.squeeze().detach().cpu().numpy())
-            train_logger.add_scalar('loss', l.cpu(), global_step=global_step)
+            if args.logdir is not None:
+                train_logger.add_scalar('loss', l.cpu(), global_step=global_step)
             global_step += 1
-        
-        train_logger.add_scalar('RMSE_steer', getRMSE(all_predictions, all_targets, 0),global_step=e)
-        train_logger.add_scalar('RMSE_acceleration', getRMSE(all_predictions, all_targets, 1),global_step=e)
-        train_logger.add_scalar('RMSE_brake', getRMSE(all_predictions, all_targets, 2),global_step=e)
+
+        # if args.logdir is not None:
+        #     train_logger.add_scalar('RMSE_steer', getRMSE(all_predictions, all_targets, 0),global_step=e)
+        #     train_logger.add_scalar('RMSE_acceleration', getRMSE(all_predictions, all_targets, 1),global_step=e)
+        #     train_logger.add_scalar('RMSE_brake', getRMSE(all_predictions, all_targets, 2),global_step=e)
         save_model(model, 'action')
 
 if __name__ == '__main__':
