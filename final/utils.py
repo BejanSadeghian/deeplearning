@@ -92,19 +92,20 @@ class VisionData(torch.utils.data.DataLoader):
         image = self.data[idx][0] + '.png'
         targets = self.data[idx][1:]
         img = Image.open(os.path.join(self.dataset_path, image))
-        img = img.resize(self.resize) #Resize image
+        # img = img.resize(self.resize) #Resize image
         if self.norm:
             image_to_tensor = transforms.Compose([transforms.ToTensor(), transforms.Normalize(self.mean, self.std)])
         else:
             image_to_tensor = transforms.ToTensor()
         img = image_to_tensor(img)
-        target_shape = img.shape[1:]
+        target_shape = (self.resize[1],self.resize[0])#img.shape[1:]
+        # print('target',target_shape)
 
         #Get Bounding Box Data
         
         bb_data = self.data[idx][0] + '.txt'
         x = [len(self.classes)]
-        x.extend(img.shape[1:])
+        x.extend(target_shape)
         bb_target = torch.zeros(x)
         if bb_data in os.listdir(self.dataset_path):
             data = []

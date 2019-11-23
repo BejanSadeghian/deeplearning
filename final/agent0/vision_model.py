@@ -72,6 +72,7 @@ class Vision(torch.nn.Module):
         """
         ##Add preprocessing
         if self.inference:
+            # print('inference')
             device = x.device
             x = x.squeeze()
             if len(x.shape) == 4:
