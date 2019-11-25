@@ -22,6 +22,7 @@ def train(args):
     vision_model = load_vision_model('vision') #Vision().to(device)
     vision_model.to(device)
     vision_model.train(False)
+    vision_model.eval()
 
     loss = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)

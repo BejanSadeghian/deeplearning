@@ -84,6 +84,7 @@ def train(args):
     vision_model = load_vision_model('vision') #Vision().to(device)
     vision_model.to(device)
     vision_model.train(False)
+    vision_model.eval()
 
     loss = torch.nn.L1Loss()
     loss.requires_grad = True
