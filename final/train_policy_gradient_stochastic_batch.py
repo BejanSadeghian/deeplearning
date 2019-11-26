@@ -73,19 +73,19 @@ class visual_loss(torch.nn.Module):
             reward_delta = input_reward - target_reward
         return reward_delta
 
-def sample_action(p):
-    steer_dist = Normal(p[0],torch.abs(p[1])+0.001) #make sure sigma is positive and non-zero
-    acc_dist = Normal(p[2],torch.abs(p[3])+0.001) #make sure sigma is positive and non-zero
-    brake_dist = Normal(p[4],torch.abs(p[5])+0.001) #make sure sigma is positive and non-zero
+# def sample_action(p):
+#     steer_dist = Normal(p[0],torch.abs(p[1])+0.001) #make sure sigma is positive and non-zero
+#     acc_dist = Normal(p[2],torch.abs(p[3])+0.001) #make sure sigma is positive and non-zero
+#     brake_dist = Normal(p[4],torch.abs(p[5])+0.001) #make sure sigma is positive and non-zero
 
-    steer = steer_dist.sample()
-    acc = acc_dist.sample()
-    brake = brake_dist.sample()
+#     steer = steer_dist.sample()
+#     acc = acc_dist.sample()
+#     brake = brake_dist.sample()
 
-    actions = torch.tensor([steer, acc, brake], dtype=torch.float, requires_grad=True)
-    log_prob = (steer_dist.log_prob(steer) + acc_dist.log_prob(acc) + brake_dist.log_prob(brake))
-    # print('prob',log_prob)
-    return actions, log_prob
+#     actions = torch.tensor([steer, acc, brake], dtype=torch.float, requires_grad=True)
+#     log_prob = (steer_dist.log_prob(steer) + acc_dist.log_prob(acc) + brake_dist.log_prob(brake))
+#     # print('prob',log_prob)
+#     return actions, log_prob
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -139,6 +139,7 @@ def train(args):
             last_image = np.array(k.render_data[0].image)
             img = image_to_tensor(last_image)
             heatmap, resized_image = vision_model(img.to(device))
+            restart = True
             for n in range(1, n_steps):
                 input_heatmap = heatmap.clone() #heatmap from past step, no longer detached for batch processing
                 resized_image = resized_image #no longer detached for batch processing
@@ -160,38 +161,62 @@ def train(args):
                 heatmap_transformed = torch.sigmoid(input_heatmap)
                 combined_image = torch.cat((resized_image, heatmap_transformed), 1) #resized_image from past step (Add detach here?)
                 p = action_model(combined_image)[0]
-                actions, log_probs = sample_action(p)
-                if n == 1:
+                actions, log_probs = HockeyPlayer.sample_action(p) #Changed to use the static method
+                if restart:
                     heatmaps = input_heatmap.clone()
                     log_probabilities = log_probs[None]
+                    restart = False
                 else:
                     new_heatmap = input_heatmap.clone()
                     heatmaps = torch.cat((heatmaps, new_heatmap))
                     log_probabilities = torch.cat((log_probabilities, log_probs[None]))
-
+                # la = k.last_action[0]
+                # k.step(pystk.Action(steer=float(la.steer), acceleration=float(la.acceleration), brake=float(la.brake)>0.5))
                 k.step(pystk.Action(steer=float(actions[0]), acceleration=float(actions[1]), brake=float(actions[2])>0.5))
-                if n == 100:
+                # if n == 100:
+                #     print(float(actions[0]), float(actions[1]), float(actions[2])>0.5)
+                #     print(p)
+                # la = k.last_action[0]
+
+                if n % (args.batch_size) == 0 and n != 0:
                     print(float(actions[0]), float(actions[1]), float(actions[2])>0.5)
                     print(p)
-                # la = k.last_action[0]
+                    #Calculate loss and take step
+                    l = loss(input=heatmaps, target=log_probabilities, team_no=team_no)
+
+                    optimizer.zero_grad()
+                    l.backward() #retain_graph=True
+                    optimizer.step()
+
+                    #Record Loss
+                    all_losses.append(l.cpu().detach().numpy())
+                    if train_logger is not None:
+                        train_logger.add_scalar('loss', l.cpu(), global_step=global_step) 
+                    global_step += 1
+                    restart = True
+
+                    # k.step(pystk.Action(rescue=True))
+
+                    for throw in range(25):
+                        k.step(pystk.Action(steer=6*float(np.random.rand(1) - 1), acceleration=float(np.random.rand(1)), brake=False))
 
                 #Get updated image to calculate reward and use for next step
                 last_image = np.array(k.render_data[0].image)
                 img = image_to_tensor(last_image)
                 heatmap, resized_image = vision_model(img.to(device))
 
-            #Calculate loss and take step
-            l = loss(input=heatmaps, target=log_probabilities, team_no=team_no)
+            # #Calculate loss and take step
+            # l = loss(input=heatmaps, target=log_probabilities, team_no=team_no)
 
-            optimizer.zero_grad()
-            l.backward() #retain_graph=True
-            optimizer.step()
+            # optimizer.zero_grad()
+            # l.backward() #retain_graph=True
+            # optimizer.step()
 
-            #Record Loss
-            all_losses.append(l.cpu().detach().numpy())
-            if train_logger is not None:
-                train_logger.add_scalar('loss', l.cpu(), global_step=global_step) 
-            global_step += 1
+            # #Record Loss
+            # all_losses.append(l.cpu().detach().numpy())
+            # if train_logger is not None:
+            #     train_logger.add_scalar('loss', l.cpu(), global_step=global_step) 
+            # global_step += 1
         finally:
             k.stop()
             del k
@@ -200,14 +225,14 @@ def train(args):
         if train_logger is not None:
             train_logger.add_scalar('Trajectory_Avg_Loss', np.mean(all_losses), global_step=e)
 
-        save_model(action_model, 'action_deterministic_no_batch')
+        save_model(action_model, 'action_stochastic_batch')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--logdir', type=str)
     parser.add_argument('--n_steps', type=int, default=300)
     parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=50)
     parser.add_argument('--max_steps', type=int, default=1000)
     parser.add_argument('--log_suffix', type=str, default='')
     parser.add_argument('--learning_rate', type=float, default=1e-3)

@@ -35,7 +35,7 @@ class HockeyPlayer:
         self.kart = all_players[np.random.choice(len(all_players))]
 
         #Load models and set to eval/no train mode
-        self.agent = load_model(os.path.relpath('action_deterministic_no_batch'))
+        self.agent = load_model(os.path.relpath('action_stochastic_batch'))
         self.agent.eval()
         self.agent.train(False)
         self.vision = load_vision_model(os.path.relpath('vision'))
@@ -44,6 +44,21 @@ class HockeyPlayer:
 
         self.counter = 0
         self.transformer = transforms.ToTensor()
+    
+    @staticmethod
+    def sample_action(p):
+        steer_dist = Normal(p[0],torch.abs(p[1])+0.001) #make sure sigma is positive and non-zero
+        acc_dist = Normal(p[2],torch.abs(p[3])+0.001) #make sure sigma is positive and non-zero
+        brake_dist = Normal(p[4],torch.abs(p[5])+0.001) #make sure sigma is positive and non-zero
+
+        steer = steer_dist.sample()
+        acc = acc_dist.sample()
+        brake = brake_dist.sample()
+
+        actions = torch.tensor([steer, acc, brake], dtype=torch.float, requires_grad=True)
+        log_prob = (steer_dist.log_prob(steer) + acc_dist.log_prob(acc) + brake_dist.log_prob(brake))
+        # print('prob',log_prob)
+        return actions, log_prob
         
     def act(self, image, player_info):
         """
@@ -75,9 +90,10 @@ class HockeyPlayer:
         # decision = self.agent(torch.sigmoid(heatmap)).detach().numpy()[0]
         # print(resized_image.shape, heatmap.shape)
         combined_image = torch.cat((resized_image, heatmap),1)
-        decision = self.agent(combined_image)[0]#.detach().numpy()[0]
+        p = self.agent(combined_image)[0]#.detach().numpy()[0]
+        actions, log_probs = self.sample_action(p)
         # print(row)
-        steer, acceleration, brake = decision
+        steer, acceleration, brake = actions
         # steer_dist = Normal(row[0],torch.abs(row[1])+0.001) #make sure sigma is positive and non-zero
         # acc_dist = Normal(row[2],torch.abs(row[3])+0.001) #make sure sigma is positive and non-zero
         # brake_dist = Normal(row[4],torch.abs(row[5])+0.001) #make sure sigma is positive and non-zero
