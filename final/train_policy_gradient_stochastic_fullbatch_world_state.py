@@ -22,8 +22,29 @@ class position_loss(torch.nn.Module):
     
     def forward(self, kart:torch.tensor, puck:torch.tensor, log_prob:torch.tensor):
         #MSE
-        delta = ((kart - puck)**2).sum(1) + self.goal_weight * ((self.goal_position - puck)**2).sum(1)
-        return (delta*log_prob).mean()
+        if len(kart.shape) == 3:
+            for i in range(kart.shape[0]):
+                time = torch.tensor(range(puck[i].shape[0]), dtype=torch.float).sqrt()
+                p = puck[i].clone().detach()
+                k = kart[i].clone().detach()
+
+                new_delta = ((k.squeeze(0) - p.squeeze(0))**2).sum(1) + self.goal_weight * ((self.goal_position - p.squeeze(0))**2).sum(1) + \
+                    100 * (90 - ((180/3.14) * torch.atan(((k.squeeze(0) - p.squeeze(0))**2).sqrt()[:,1] / ((k.squeeze(0) - p.squeeze(0))**2).sqrt()[:,0])))**2
+                new_delta = (new_delta * log_prob[i].squeeze(0) * time).mean()
+                if i == 0:
+                    delta = new_delta.clone()[None]
+                else:
+                    delta = torch.cat((delta, new_delta[None]),0)
+                # print(1,delta.shape)
+            delta = delta.squeeze(0)
+            # print(delta.shape)
+        else:
+            time = torch.tensor(range(puck.shape), dtype=torch.float).sqrt()
+            p = puck.clone().detach()
+            k = kart.clone().detach()
+            delta = ((k - p)**2).sum(1) + self.goal_weight * ((self.goal_position - p)**2).sum(1)
+            delta = delta*log_prob*time
+        return delta.mean()
 
 
 class visual_loss(torch.nn.Module):
@@ -147,7 +168,7 @@ def train(args):
             o = pystk.PlayerConfig(controller = pystk.PlayerConfig.Controller.PLAYER_CONTROL, kart='hexley', team = 0)
             race_config.players.append(o)
             # print(race_config.players.pop())
-
+            print('batch',b)
             image_to_tensor = transforms.ToTensor()
             k = pystk.Race(race_config)
             state = pystk.WorldState()
@@ -205,7 +226,7 @@ def train(args):
                     if n == 100:
                         print(float(actions[0]), float(actions[1]), float(actions[2])>0.5)
                         print(p)
-                        
+
                     #Get updated image to calculate reward and use for next step
                     last_image = np.array(k.render_data[0].image)
                     img = image_to_tensor(last_image)
@@ -219,24 +240,24 @@ def train(args):
                 pucks = puck[None]
                 log_probabilities_set = log_probabilities[None]
             else:
-                karts = torch.cat(karts, kart[None],0)
-                pucks = torch.cat(pucks, puck[None],0)
-                log_probabilities_set = torch.cat(log_probabilities_set, log_probabilities[None],0)
-            print(karts.shape, pucks.shape, log_probabilities_set.shape)
-            #Calculate loss and take step
-            l = loss(karts[1:], pucks[1:], log_probabilities_set[1:])
-            print('loss',l)
-            # print('allowed batchs',allowed_batchs)
-            optimizer.zero_grad()
-            l.backward() #retain_graph=True
-            optimizer.step()
+                karts = torch.cat((karts, kart[None]),0)
+                pucks = torch.cat((pucks, puck[None]),0)
+                log_probabilities_set = torch.cat((log_probabilities_set, log_probabilities[None]),0)
+        # print(karts.shape, pucks.shape, log_probabilities_set.shape)
+        #Calculate loss and take step
+        l = loss(karts[1:], pucks[1:], log_probabilities_set[1:])
+        print('loss',l)
+        # print('allowed batchs',allowed_batchs)
+        optimizer.zero_grad()
+        l.backward() #retain_graph=True
+        optimizer.step()
 
-            #Record Loss
-            all_losses.append(l.cpu().detach().numpy())
-            if train_logger is not None:
-                train_logger.add_scalar('loss', l.cpu(), global_step=global_step) 
-            global_step += 1
-            restart = True
+        #Record Loss
+        all_losses.append(l.cpu().detach().numpy())
+        if train_logger is not None:
+            train_logger.add_scalar('loss', l.cpu(), global_step=global_step) 
+        global_step += 1
+        restart = True
 
         # all_losses, global_step = one_trajectory_run(device, vision_model, action_model, loss, optimizer, train_logger=train_logger, n_steps=200, global_step=global_step)
         if train_logger is not None:
@@ -247,9 +268,9 @@ def train(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--logdir', type=str)
-    parser.add_argument('--n_steps', type=int, default=300)
+    parser.add_argument('--n_steps', type=int, default=100)
     parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=10)
     parser.add_argument('--max_steps', type=int, default=1000)
     parser.add_argument('--log_suffix', type=str, default='')
     parser.add_argument('--learning_rate', type=float, default=1e-3)
