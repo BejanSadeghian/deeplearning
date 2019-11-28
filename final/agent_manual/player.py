@@ -6,7 +6,7 @@ from PIL import Image
 from datetime import datetime
 from torchvision import transforms
 
-from .model import load_model, Action
+from .classifier_model import load_classifier_model, Classifier
 from .vision_model import load_vision_model, Vision
 
 class HockeyPlayer:

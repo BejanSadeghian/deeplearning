@@ -120,7 +120,7 @@ class ClassifierData(torch.utils.data.DataLoader):
                 # index = self.classes.index(d[0])
                 # bb_target[index] = draw_data(target_shape, d)
 
-        return (img, torch.tensor(targets, dtype=torch.float), torch.tensor(target, dtype=torch.float))
+        return (img, torch.tensor(targets, dtype=torch.float), torch.tensor(target, dtype=torch.float)[None])
 
 class VisionData(torch.utils.data.DataLoader):
 

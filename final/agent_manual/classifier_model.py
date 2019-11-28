@@ -42,10 +42,10 @@ class Classifier(torch.nn.Module):
         """
         self.normalize = normalize
         self.inference = inference
-        self.mean = torch.tensor([8.9478, 8.9478, 8.9478,0,0,0], dtype=torch.float) #TODO: Remove the 1s later when not concat
-        self.std = torch.tensor([47.0021, 42.1596, 39.2562,1,1,1], dtype=torch.float) #TODO: Remove the 1s later when not concat
+        self.mean = torch.tensor([8.9478, 8.9478, 8.9478], dtype=torch.float) #TODO: Remove the 1s later when not concat
+        self.std = torch.tensor([47.0021, 42.1596, 39.2562], dtype=torch.float) #TODO: Remove the 1s later when not concat
 
-        c = 6 #Testing the combined heatmap       
+        c = 3      
         self.network = torch.nn.ModuleList()
         for l in layers:
             kernel_size = 7 if c == 3 or c == 6 else 3
@@ -70,21 +70,21 @@ class Classifier(torch.nn.Module):
         return (B,2)
         """
 
-        if self.inference and False: #Testing removal
+        if self.inference: 
             x = x.squeeze()
-            # print('forward',x.shape)
+            print('forward',x.shape)
             if len(x.shape) == 4:
                 images = []
                 for i in x:
                     img = transforms.functional.to_pil_image(i)
-                    x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
+                    x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))[None]
                     images.append(x)
                 x = torch.cat(images)
                 # print(x.shape)
             else:
                 img = transforms.functional.to_pil_image(x)
                 x = transforms.functional.to_tensor(transforms.Resize((100,130))(img))
-        # print('forward', x.shape)
+        print('forward', x.shape)
         if self.normalize:
             x = (x - self.mean[None, :, None, None].to(x.device)) / self.std[None, :, None, None].to(x.device)
         

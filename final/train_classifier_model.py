@@ -35,9 +35,9 @@ def train(args):
         for batch in train_data:
             images = batch[0].to(device)
             labels = batch[2].to(device) #Image at location 2
-            # print('batch', images.shape)
+            print('batch', labels.shape, images.shape)
             # all_targets.append(batch[2].cpu().numpy())
-
+            
             pred = model(images)
             # all_predictions.append(pred.cpu().detach().numpy())
             # print(labels.shape, pred.shape)
