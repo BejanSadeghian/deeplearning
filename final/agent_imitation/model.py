@@ -59,16 +59,28 @@ class Action(torch.nn.Module):
         for l in reversed(layers[:-2]):
             self.upnetwork.append(self.upconv_block(c * 2, l, 2, 3, 1)) # x2 input because of skip
             c = l
-        self.classifier = torch.nn.Linear(c, 3)
+        self.classifier = torch.nn.Linear(c + 64, 3)
+
+        #Dense network for additional features
+        self.dense = torch.nn.Sequential(
+            torch.nn.Linear(10, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32,64),
+            torch.nn.ReLU()
+        )
         
 
-    def forward(self, x):
+    def forward(self, x, x2):
         """
         Your code here
         Predict the aim point in image coordinate, given the supertuxkart image
         @img: (B,3,96,128)
         return (B,2)
         """
+
+        x_out = self.dense(x2)
 
         if self.inference and False: #Testing removal
             x = x.squeeze()
@@ -99,7 +111,7 @@ class Action(torch.nn.Module):
             x = torch.cat([z[:,:, :activations[-2-i].size(2), :activations[-2-i].size(3)], activations[-2-i]], dim=1)
             z = layer(x)
 
-        return self.classifier(z.mean([2,3]))
+        return self.classifier(torch.cat((z.mean([2,3]), x_out),1))
 
 def save_model(model, name='action'):
     from torch import save
