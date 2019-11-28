@@ -24,19 +24,43 @@ class position_loss(torch.nn.Module):
         #MSE
         if len(kart.shape) == 3:
             for i in range(kart.shape[0]):
-                time = torch.tensor(range(puck[i].shape[0]), dtype=torch.float).sqrt()
+                print(kart.shape[0])
+                
                 p = puck[i].clone().detach()
                 k = kart[i].clone().detach()
+                diff = k.squeeze(0) - p.squeeze(0)
+                diff_sq = (diff)**2
 
-                new_delta = ((k.squeeze(0) - p.squeeze(0))**2).sum(1) + self.goal_weight * ((self.goal_position - p.squeeze(0))**2).sum(1) + \
-                    100 * (90 - ((180/3.14) * torch.atan(((k.squeeze(0) - p.squeeze(0))**2).sqrt()[:,1] / ((k.squeeze(0) - p.squeeze(0))**2).sqrt()[:,0])))**2
-                new_delta = (new_delta * log_prob[i].squeeze(0) * time).mean()
+                reward = (diff_sq).sum(1).sqrt() + \
+                    self.goal_weight * ((self.goal_position - p.squeeze(0))**2).sum(1).sqrt()
+                    #  + \
+                    # 100 * (90 - ((180/3.14) * torch.atan((diff_sq).sqrt()[:,1] / (diff_sq).sqrt()[:,0])))**2
+
+                # new_delta = (reward * log_prob[i].squeeze(0) * time).mean()
+                # print('reward',log_prob)
                 if i == 0:
-                    delta = new_delta.clone()[None]
+                    time = torch.tensor(i)[None]
+                    all_rewards = reward.clone()[None]
+                    all_logprob = log_prob.clone()[None]
+
+                    r = -reward.clone()[None] 
+                    lp = -log_prob.clone()[None]
+                    weighted_reward = (lp * (r - r.mean())).sum()
+                    all_weighted_rewards = weighted_reward.clone()[None]
+                    # delta = new_delta.clone()[None]
                 else:
-                    delta = torch.cat((delta, new_delta[None]),0)
-                # print(1,delta.shape)
-            delta = delta.squeeze(0)
+                    time = torch.cat((time, torch.tensor(i)[None]),0)
+                    all_rewards = -1*torch.cat((all_rewards, reward[None]),0) #flipped to a maximization problem
+                    all_logprob = torch.cat((all_logprob, log_prob[None]),0)
+                    r = -reward.clone()[None] 
+                    lp = -log_prob.clone()[None]
+                    weighted_reward = (lp * (r - r.mean())).sum()
+                    all_weighted_rewards = torch.cat((all_weighted_rewards, weighted_reward[None]),0)
+                    # delta = torch.cat((delta, new_delta[None]),0)
+                print(1,all_weighted_rewards)
+            # delta = -all_logprob * (all_rewards - all_rewards.mean()) #flipped to a maximization problem
+            delta = all_weighted_rewards.mean()
+            result = delta.squeeze(0)
             # print(delta.shape)
         else:
             time = torch.tensor(range(puck.shape), dtype=torch.float).sqrt()
@@ -44,7 +68,8 @@ class position_loss(torch.nn.Module):
             k = kart.clone().detach()
             delta = ((k - p)**2).sum(1) + self.goal_weight * ((self.goal_position - p)**2).sum(1)
             delta = delta*log_prob*time
-        return delta.mean()
+            result = delta.mean()
+        return result
 
 
 class visual_loss(torch.nn.Module):

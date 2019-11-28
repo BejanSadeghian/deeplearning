@@ -59,6 +59,20 @@ class HockeyPlayer:
         log_prob = (steer_dist.log_prob(steer) + acc_dist.log_prob(acc) + brake_dist.log_prob(brake))
         # print('prob',log_prob)
         return actions, log_prob
+    
+    @staticmethod
+    def get_rotation(q):
+        qw,qx,qy,qz = q
+        # a = 2*(w*z + x*y)
+        # b = 1-2*(y**2 + z**2)
+        # angle = np.arctan2(a,b)
+
+        heading = np.arctan2(2*qy*qw-2*qx*qz , 1 - 2*qy**2 - 2*qz**2)
+        # attitude = np.arcsin(2*qx*qy + 2*qz*qw) 
+        # bank = np.arctan2(2*qx*qw-2*qy*qz , 1 - 2*qx**2 - 2*qz**2)
+
+        return (heading * (180/np.pi))
+        # return angle
         
     def act(self, image, player_info):
         """
@@ -71,6 +85,10 @@ class HockeyPlayer:
         """
         Your code here.
         """
+        # print((player_info.kart.location)) #if z < 0 at start you're facing the red goal (team 1) otherwise the blue 
+        # print((player_info.kart.rotation))
+        angle = get_rotation(player_info.kart.rotation)
+
         img = self.transformer(image)
         image_orig = torch.tensor(image, dtype=torch.float).permute(2,0,1)[None]
         heatmap, resized_image = self.vision(img)
